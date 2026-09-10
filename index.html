@@ -99,7 +99,7 @@ body {
 .cb-mod { display:inline-block; padding:2px 8px; border-radius:8px; color:#fff; font-size:0.65rem; font-weight:700; }
 .cb-mod.cs { background:#3182ce; } .cb-mod.yy { background:#d69e2e; } .cb-mod.sl { background:#e53e3e; }
 .cb-mod.pd { background:#805ad5; } .cb-mod.zl { background:#38a169; } .cb-mod.slun { background:#dd6b20; }
-.cb-mod.ms { background:#319795; }
+.cb-mod.ms { background:#319795; } .cb-mod.gj { background:#d53f8c; }
 .cb-mbar { display:flex; align-items:center; gap:8px; margin-bottom:6px; }
 .cb-mbar-label { font-size:0.75rem; width:72px; text-align:right; font-weight:600; color:#4a5568; flex-shrink:0; }
 .cb-mbar-track { flex:1; height:8px; background:#e2e8f0; border-radius:4px; overflow:hidden; }
@@ -212,7 +212,8 @@ body{background:radial-gradient(1200px 420px at 50% -180px,rgba(220,130,160,.14)
 .cb-btn.pri{background:linear-gradient(135deg,#eaa2b4,#dc8198);box-shadow:0 5px 14px rgba(217,139,160,.30)}
 .cb-btn.gold{background:linear-gradient(135deg,#fbbf24,#f59e0b);box-shadow:0 5px 14px rgba(245,158,11,.3)}
 .cb-btn.danger{background:linear-gradient(135deg,#f43f5e,#e11d48);box-shadow:0 5px 14px rgba(225,29,72,.28)}
-.cb-btn.ghost{border:1px solid var(--border);background:var(--card);color:var(--pri)}
+.cb-btn.ghost{border:1.5px solid rgba(196,120,142,.45);background:rgba(255,255,255,.92);color:#9c4f66}
+body.dark .cb-btn.ghost{border:1px solid var(--border);background:var(--card);color:var(--pri)}
 .cb-form textarea,.cb-form input,.cb-form select{border-radius:12px;padding:11px 12px;border:1px solid var(--border);background:var(--card);color:var(--text)}
 .cb-form textarea:focus,.cb-form input:focus,.cb-form select:focus{border-color:var(--pri);box-shadow:0 0 0 3px rgba(220,130,160,.16)}
 .cb-setting input,.cb-setting select{border-radius:10px;background:var(--card);color:var(--text)}
@@ -279,7 +280,7 @@ body.dark #cb-topbar{background:linear-gradient(120deg,#3a242b,#6e3a4d 60%,#5531
 <section id="cb-view-add" class="cb-view">
   <div class="cb-tabs"><button class="cb-tab-btn active" data-tab="manual">✏️ 手动录入</button><button class="cb-tab-btn" data-tab="photo">📷 拍照识别</button><button class="cb-tab-btn" data-tab="text">📝 文字识别</button><button class="cb-tab-btn" data-tab="shenlun">📜 申论复盘</button></div>
   <div id="cb-tab-manual"><form class="cb-form cb-card" id="cb-form-add"><h2>录入错题</h2><label>模块</label><div class="cb-chips" id="cb-add-chips"></div><label for="cb-inp-q">题目</label><textarea id="cb-inp-q" rows="3" placeholder="输入题目…" required></textarea><label for="cb-inp-a">答案 / 解析</label><textarea id="cb-inp-a" rows="3" placeholder="输入正确答案…" required></textarea><div class="cb-form-row"><div class="cb-form-col"><label>题型</label><select id="cb-inp-qtype"></select></div><div class="cb-form-col"><label>答题形式</label><select id="cb-inp-fmt"><option>单选</option><option>多选</option><option>判断</option><option>不定项</option><option>案例分析</option><option>公文写作</option><option>大作文</option><option>其他</option></select></div></div><div class="cb-form-row"><div class="cb-form-col"><label>难度</label><select id="cb-inp-diff"><option value="1">⭐</option><option value="2">⭐⭐</option><option value="3">⭐⭐⭐</option></select></div><div class="cb-form-col"><label>来源</label><select id="cb-inp-src"><option>未知</option><option>真题</option><option>模拟题</option><option>专项练习</option></select></div></div><div class="cb-form-row"><div class="cb-form-col"><label>错因</label><select id="cb-inp-cause"><option>知识点不熟</option><option>粗心大意</option><option>理解偏差</option><option>时间不够</option><option>审题错误</option><option>其他</option></select></div></div><div style="display:flex;gap:8px;margin-top:12px"><button type="submit" class="cb-btn pri">💾 保存</button><button type="button" class="cb-btn ghost" id="cb-btn-cancel-add">取消</button></div></form></div>
-  <div id="cb-tab-photo" style="display:none"><div class="cb-card"><div id="cb-photo-up"><div style="display:flex;gap:10px;margin-bottom:12px"><div id="cb-photo-camera" class="cb-photo-up" style="flex:1;cursor:pointer"><div class="cb-pu-icon">📷</div><p>拍照</p><p style="font-size:0.65rem;color:#a0aec0">直接用相机拍试卷</p></div><div id="cb-photo-gallery" class="cb-photo-up" style="flex:1;cursor:pointer"><div class="cb-pu-icon">🖼</div><p>相册</p><p style="font-size:0.65rem;color:#a0aec0">从相册选择照片</p></div></div><p style="text-align:center;font-size:0.72rem;color:var(--text2)">AI 会自动忽略手写与红笔批改，只识别印刷体题目；资料分析会逐格读取表格数字</p><p style="text-align:center;font-size:0.66rem;color:#a0aec0;margin-top:4px">✅ 每天 30 次免费 AI 额度（0 点重置）；激活码升级到每日 500 次（联系开发者 QQ）</p></div><input type="file" id="cb-photo-inp" accept="image/*" capture="environment" style="position:fixed;left:-9999px;top:0;width:1px;height:1px;opacity:0;z-index:-1"><div id="cb-photo-pv" class="cb-photo-pv" style="display:none"><img id="cb-photo-img" src="" alt="预览"><button class="cb-photo-rm" id="cb-photo-rm">✕</button></div><button class="cb-btn gold wide" id="cb-btn-analyze" style="display:none">🔍 开始识别</button><div id="cb-ai-loading" style="display:none;text-align:center;padding:20px"><div class="cb-spinner"></div><p style="font-size:0.8rem;color:var(--text2);margin-top:8px">AI 正在识别错题...</p></div><div id="cb-ai-results" style="display:none"><div class="cb-sec-hd"><h2 id="cb-ai-count">识别结果</h2></div><div id="cb-ai-list"></div><button class="cb-btn pri wide" id="cb-btn-save-ai" style="margin-top:8px">💾 全部保存</button></div></div></div>
+  <div id="cb-tab-photo" style="display:none"><div class="cb-card"><div id="cb-photo-up"><div style="display:flex;gap:10px;margin-bottom:12px"><div id="cb-photo-camera" class="cb-photo-up" style="flex:1;cursor:pointer"><div class="cb-pu-icon">📷</div><p>拍照</p><p style="font-size:0.65rem;color:#a0aec0">直接用相机拍试卷</p></div><div id="cb-photo-gallery" class="cb-photo-up" style="flex:1;cursor:pointer"><div class="cb-pu-icon">🖼</div><p>相册</p><p style="font-size:0.65rem;color:#a0aec0">从相册选择照片</p></div></div><p style="text-align:center;font-size:0.72rem;color:var(--text2)">AI 会自动忽略手写与红笔批改，只识别印刷体题目；资料分析会逐格读取表格数字</p><p id="cb-photo-quota" style="text-align:center;font-size:0.66rem;color:#a0aec0;margin-top:4px">额度加载中…</p></div><input type="file" id="cb-photo-inp" accept="image/*" capture="environment" style="position:fixed;left:-9999px;top:0;width:1px;height:1px;opacity:0;z-index:-1"><div id="cb-photo-pv" class="cb-photo-pv" style="display:none"><img id="cb-photo-img" src="" alt="预览"><button class="cb-photo-rm" id="cb-photo-rm">✕</button></div><button class="cb-btn gold wide" id="cb-btn-analyze" style="display:none">🔍 开始识别</button><div id="cb-ai-loading" style="display:none;text-align:center;padding:20px"><div class="cb-spinner"></div><p style="font-size:0.8rem;color:var(--text2);margin-top:8px">AI 正在识别错题...</p></div><div id="cb-ai-results" style="display:none"><div class="cb-sec-hd"><h2 id="cb-ai-count">识别结果</h2></div><div id="cb-ai-list"></div><button class="cb-btn pri wide" id="cb-btn-save-ai" style="margin-top:8px">💾 全部保存</button></div></div></div>
 </section>
 <div id="cb-tab-text" style="display:none"><div class="cb-card"><h2>📝 文字批量识别</h2><p style="font-size:0.75rem;color:var(--text2);margin-bottom:8px">粘贴一题或多题（含选项），AI 会自动归类并生成速解解析</p><textarea id="cb-text-inp" rows="9" placeholder="粘贴题目文字，可一次粘贴多题…" style="width:100%;box-sizing:border-box;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:0.85rem"></textarea><button class="cb-btn gold wide" id="cb-btn-text-rec" style="margin-top:10px">🔍 开始识别</button><div id="cb-text-loading" style="display:none;text-align:center;padding:20px"><div class="cb-spinner"></div><p style="font-size:0.8rem;color:var(--text2);margin-top:8px">AI 正在识别题目…</p></div><div id="cb-text-results" style="display:none;margin-top:12px"><div class="cb-sec-hd"><h2 id="cb-text-count">识别结果</h2></div><div id="cb-text-list"></div><button class="cb-btn pri wide" id="cb-btn-text-save" style="margin-top:8px">💾 全部保存</button></div></div></div>
 <div id="cb-tab-shenlun" style="display:none"><div class="cb-card"><h2>📜 申论复盘（复盘一体版）</h2><p style="font-size:0.75rem;color:var(--text2);margin-bottom:8px">粘贴题干+材料即可解析（审题拆解→材料找点→示范答案）；再填上你的作答就变成批改（逐条评点+定档+修改建议）；参考答案可选用于校准。文字复盘不扣识图额度。</p><label style="font-size:0.75rem;color:var(--text2)">题型</label><select id="cb-sl-qtype" style="width:100%;box-sizing:border-box;border:1px solid var(--border);border-radius:8px;padding:8px;font-size:0.85rem;margin-bottom:8px"><option>归纳概括</option><option>综合分析</option><option>提出对策</option><option>贯彻执行</option><option>文章写作</option><option>其他</option></select><label style="font-size:0.75rem;color:var(--text2)">题干（含分值/字数要求）</label><textarea id="cb-sl-q" rows="3" placeholder="例如：根据给定资料1-3，概括S省推进基层治理现代化的主要做法。（15分，不超过300字）" style="width:100%;box-sizing:border-box;border:1px solid var(--border);border-radius:8px;padding:8px;font-size:0.85rem;margin-bottom:8px"></textarea><label style="font-size:0.75rem;color:var(--text2)">给定材料</label><textarea id="cb-sl-mat" rows="8" placeholder="粘贴全部给定资料（材料原文）…" style="width:100%;box-sizing:border-box;border:1px solid var(--border);border-radius:8px;padding:8px;font-size:0.85rem;margin-bottom:8px"></textarea><label style="font-size:0.75rem;color:var(--text2)">我的作答（可选，填了就是批改模式）</label><textarea id="cb-sl-ans" rows="5" placeholder="粘贴你的作答…" style="width:100%;box-sizing:border-box;border:1px solid var(--border);border-radius:8px;padding:8px;font-size:0.85rem;margin-bottom:8px"></textarea><label style="font-size:0.75rem;color:var(--text2)">参考答案（可选，用于校准）</label><textarea id="cb-sl-ref" rows="4" placeholder="粘贴参考答案…" style="width:100%;box-sizing:border-box;border:1px solid var(--border);border-radius:8px;padding:8px;font-size:0.85rem;margin-bottom:8px"></textarea><div style="display:flex;gap:8px;margin-top:4px"><button class="cb-btn gold" id="cb-btn-shenlun-go" style="flex:1">📜 开始复盘</button><button class="cb-btn ghost" id="cb-btn-shenlun-save" style="flex:1;display:none">💾 存入错题本</button></div><div id="cb-sl-loading" style="display:none;text-align:center;padding:16px"><div class="cb-spinner"></div><p style="font-size:0.8rem;color:var(--text2);margin-top:8px">正在复盘…（题干拆解→材料找点→组织/批改）</p></div><div id="cb-sl-out" style="display:none;margin-top:10px;font-size:0.82rem;line-height:1.75;white-space:pre-wrap;border:1px solid var(--border);border-radius:8px;padding:10px;background:var(--card)"></div></div></div>
@@ -383,8 +384,8 @@ body.dark #cb-topbar{background:linear-gradient(120deg,#3a242b,#6e3a4d 60%,#5531
 
 <script>
 // 考岸错题本 v4 - all-in-one
-var MODS=["常识判断","言语理解与表达","数量关系","判断推理","资料分析","申论","面试"];
-var MOD_CLASS={"常识判断":"cs","言语理解与表达":"yy","数量关系":"sl","判断推理":"pd","资料分析":"zl","申论":"slun","面试":"ms"};
+var MODS=["常识判断","言语理解与表达","数量关系","判断推理","资料分析","申论","面试","公共基础知识"];
+var MOD_CLASS={"常识判断":"cs","言语理解与表达":"yy","数量关系":"sl","判断推理":"pd","资料分析":"zl","申论":"slun","面试":"ms","公共基础知识":"gj"};
 function modCls(m){return MOD_CLASS[m]||"cs"}
 var SRS_INT=[1,3,7,15,30,60,120,180];
 var RATE_D=[-2,-1,0,1,2];
@@ -619,7 +620,7 @@ function saveSimpleQuestion(){
   var sid="q_"+now.getTime()+"_"+Math.random().toString(36).slice(2,8)+"_s";
   dbAdd({id:sid,mod:mod,q:"（图片题，原图见附图）",a:a,
     qtype:qtype.value,qfmt:fmt?fmt.value:"单选",diff:diff?parseInt(diff.value)||2:2,src:src?src.value:"未知",
-    cause:cause?cause.value:"其他",verify:a?"已核对":"待核对",kw:out,img:photoUrl,notes:(notes?notes.value.trim():"")+(out.length?("\n考点："+out.join("、")):""),
+    cause:cause?cause.value:"其他",verify:a?"已核对":"待核对",kw:out,img:photoUrl,imgOrig:(photoOrig&&photoUrl&&photoOrig!==photoUrl)?photoOrig:null,notes:(notes?notes.value.trim():"")+(out.length?("\n考点："+out.join("、")):""),
     lv:0,ef:2.5,iv:1,nr:now.toISOString(),rep:0,hist:[],ct:now.toISOString(),lr:null,ut:now.toISOString()
   },function(){
     if(simplePending.length){
@@ -768,7 +769,8 @@ var QTYPES={
   "判断推理":["图形推理","定义判断","类比推理","逻辑判断","事件排序","其他判断"],
   "资料分析":["增长相关","比重相关","平均数与倍数","综合分析","其他资料"],
   "申论":["归纳概括","综合分析","提出对策","贯彻执行","文章写作"],
-  "面试":["综合分析","计划组织","应急应变","人际关系","自我认知","其他面试"]
+  "面试":["综合分析","计划组织","应急应变","人际关系","自我认知","其他面试"],
+  "公共基础知识":["政治理论","法律基础","经济知识","管理基础","公文写作","科技人文","时事政治","其他公基"]
 };
 var KPOINTS={
   "常识判断":["时政","法律常识","经济常识","人文历史","科技常识","地理国情","管理公文","党史党建","职业道德"],
@@ -777,7 +779,8 @@ var KPOINTS={
   "判断推理":["位置规律","样式规律","属性规律","数量规律","空间重构","平面拼合","定义判断","全同关系","包含关系","交叉关系","并列关系","语义关系","语法关系","对应关系","翻译推理","假言命题","真假推理","加强削弱","日常结论","解释评价"],
   "资料分析":["现期与基期","增长率","增长量","比重","平均数","倍数与翻番","年均增长","隔年增长","混合增长率","两期比重","平均数增长率","拉动增长","贡献率","综合分析"],
   "申论":["归纳概括","综合分析","提出对策","贯彻执行","文章写作","审题立意","要点加工"],
-  "面试":["综合分析","计划组织","应急应变","人际关系","自我认知","言语表达"]
+  "面试":["综合分析","计划组织","应急应变","人际关系","自我认知","言语表达"],
+  "公共基础知识":["马克思主义基本原理","毛泽东思想","中国特色社会主义理论","党史党建","宪法","民法典","刑法","行政法","经济常识","管理常识","公文写作","科技常识","人文历史","地理国情","时事政治","职业道德"]
 };
 function kwLibText(){
   var h="";for(var m in KPOINTS)h+=m+"："+KPOINTS[m].join("、")+"\n";return h;
@@ -791,7 +794,7 @@ function normKeywords(mod,arr){
 }
 var examQs=[], examAns={}, examTimer=null, examSec=0;
 var kwFilter="";
-var APP_VERSION_CODE=112; var APP_VERSION_NAME="1.10.54";
+var APP_VERSION_CODE=120; var APP_VERSION_NAME="1.10.62";
 
 // ===== VIEW SWITCH =====
 function sv(v){
@@ -801,7 +804,7 @@ function sv(v){
   var ts=document.querySelectorAll(".cb-nav-tab"); for(i=0;i<ts.length;i++) ts[i].classList.toggle("active",ts[i].dataset.view===v);
   if(v==="dashboard") rd();
   else if(v==="manage") rm();
-  else if(v==="add") ra();
+  else if(v==="add"){ra();updateQuotaUI();}
   else if(v==="checkin") rcheckin();
   else if(v==="stats") rstat();
   else if(v==="exam") rexam();
@@ -892,6 +895,7 @@ function renderRQ(){
   var parsed=splitOptions(q.q);
   var qText=parsed?parsed.stem:(q.q||"");
   document.getElementById("cb-review-q").innerHTML=(q.img?'<div style="margin-bottom:8px"><img src="'+q.img+'" onclick="openImgView(this.src)" style="max-width:100%;max-height:260px;object-fit:contain;border-radius:8px;border:1px solid var(--border);cursor:zoom-in"><div style="font-size:0.68rem;color:var(--text2);margin-top:2px">🖼 原题图片（点击放大）</div></div>':'')+(q.verify==="待核对"?'<div style="color:#dd6b20;font-size:0.75rem;margin-bottom:6px">⚠️ 答案待核对，请对照原题确认</div>':'')+qText.replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  if(q.imgOrig) document.getElementById("cb-review-q").innerHTML+='<div style="margin-bottom:8px"><img src="'+q.imgOrig+'" onclick="openImgView(this.src)" style="max-width:100%;max-height:200px;object-fit:contain;border-radius:8px;border:1px solid var(--border);cursor:zoom-in"><div style="font-size:0.68rem;color:var(--text2);margin-top:2px">🖼 原图（未去笔迹，点击放大）</div></div>';
   var optDiv=document.getElementById("cb-review-opts");
   var ans=q.a?String(q.a).replace(/\s/g,"").toUpperCase():"";
   if(parsed&&parsed.opts.length>=2&&/^[A-E]$/.test(ans)){
@@ -1218,6 +1222,7 @@ function showDetail(id){
     document.getElementById("cb-modal-verify").style.display=q.verify==="待核对"?"":"none";
     document.getElementById("cb-modal-title").innerHTML='<span class="cb-mod '+modCls(q.mod||MODS[0])+'">'+q.mod+'</span>';
     document.getElementById("cb-modal-q").innerHTML=(q.img?'<img src="'+q.img+'" onclick="openImgView(this.src)" style="max-width:100%;max-height:260px;object-fit:contain;border-radius:8px;margin-bottom:8px;cursor:zoom-in">':'')+String(q.q||"").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    if(q.imgOrig){document.getElementById("cb-modal-q").innerHTML+='<div style="font-size:0.68rem;color:var(--text2);margin:2px 0 6px">🖼 原图（未去笔迹）</div><img src="'+q.imgOrig+'" onclick="openImgView(this.src)" style="max-width:100%;max-height:220px;object-fit:contain;border-radius:8px;margin-bottom:8px;cursor:zoom-in;border:1px solid var(--border)">'}
     document.getElementById("cb-modal-a").textContent=q.a||"";
     if(q.notes){document.getElementById("cb-modal-notes-wrap").style.display="";document.getElementById("cb-modal-notes").textContent=q.notes}else{document.getElementById("cb-modal-notes-wrap").style.display="none"}
     document.getElementById("cb-modal-meta").innerHTML='<span>题型：'+(q.qtype||"")+'</span><span>答题形式：'+(q.qfmt||"")+'</span><span>核对：'+(q.verify||"")+'</span><span>难度：'+["","⭐","⭐⭐","⭐⭐⭐"][q.diff||1]+'</span><span>错因：'+(q.cause||"")+'</span><span>复习：'+q.rep+'次</span><span>等级：L'+(q.lv||0)+'</span><span>下次：'+fd(q.nr)+'</span>';
@@ -1441,7 +1446,7 @@ function normImportItem(x){
     qtype:(QTYPES[m]||["其他"]).indexOf(x&&x.qtype)>=0?x.qtype:(QTYPES[m]||["其他"])[0],
     qfmt:AF_TYPES.indexOf(x&&x.qfmt)>=0?x.qfmt:AF_TYPES[0],
     diff:[1,2,3].indexOf(x&&x.diff)>=0?x.diff:2,src:(x&&x.src)||"未知",cause:CAUSES.indexOf(x&&x.cause)>=0?x.cause:"其他",
-    verify:(x&&x.verify)==="已核对"?"已核对":"待核对",kw:Array.isArray(x&&x.kw)?x.kw:[],img:safeImg,notes:(x&&x.notes)||"",
+    verify:(x&&x.verify)==="已核对"?"已核对":"待核对",kw:Array.isArray(x&&x.kw)?x.kw:[],img:safeImg,imgOrig:(typeof (x&&x.imgOrig)==="string"&&x.imgOrig.indexOf("data:image/")===0&&x.imgOrig.length<2000000)?x.imgOrig:null,notes:(x&&x.notes)||"",
     lv:(x&&x.lv)||0,ef:(x&&x.ef)||2.5,iv:(x&&x.iv)||1,nr:(x&&x.nr)||new Date().toISOString(),rep:(x&&x.rep)||0,
     hist:Array.isArray(x&&x.hist)?x.hist:[],ct:(x&&x.ct)||new Date().toISOString(),lr:(x&&x.lr)||null,ut:new Date().toISOString()};
 }
@@ -1593,6 +1598,14 @@ function warnDupAfterSave(saved){
   },1200);
 }
 var CHANGELOG=[
+{v:"1.10.62",t:"修复裁剪界面按钮显示（旋转、重选、自由恢复正常且更清晰）；安装后系统里显示的版本号与设置里一致；跨天统计异常，新的一天自动从零开始计算"},
+{v:"1.10.61",t:"激活码支持点击直接复制并自动填入输入框，另提供「复制全部」，不用再长按选择"},
+{v:"1.10.60",t:"兼容旧版次数包激活码（输入即按每日 500 次生效）；额度提示更清楚，可一键跳去输入激活码"},
+{v:"1.10.59",t:"界面优化：日间模式下按钮更清晰（对比度提升）；裁剪的旋转/重选按钮更醒目，并标注左转/右转 90°"},
+{v:"1.10.58",t:"修复检查更新下载失败：安装包改走国内可访问的高速下载线路"},
+{v:"1.10.57",t:"去笔迹后同时保留原图：处理图与原图都会保存，详情页/复习页可对照查看原图"},
+{v:"1.10.56",t:"识别引擎升级更准更快；新增公共基础知识板块；修复激活后额度显示不同步（拍照页实时显示剩余额度）；云同步与备份优化"},
+{v:"1.10.55",t:"体验优化"},
 {v:"1.10.54",t:"体验优化"},
 {v:"1.10.53",t:"体验优化"},
 {v:"1.10.52",t:"体验优化"},
@@ -1828,7 +1841,7 @@ async function aiCleanImage(src){
       res();
     };im.onerror=function(){res()};im.src=src});
   }catch(e){}
-  var bodyObj={model:DEV_AI_CLEAN_MODEL,prompt:"这是一张试卷或题目照片。请去除图上所有手写笔迹、红笔批改、铅笔痕迹、涂改和脏污，只保留原图印刷体内容。必须严格保留：印刷文字的内容、顺序、字号与字体样式、段落与题目版式、编号、图形、表格、图表的结构和位置，以及整张图的构图和纸张底色不变。不要新增、删除、改写或重新排版任何印刷元素，仅在笔迹原位置做干净处理，输出一张整洁且与原图构图完全一致的试卷图。",size:size,ratio:ratio,extra_body:{image:[src],response_format:"b64_json"}};
+  var bodyObj={model:DEV_AI_CLEAN_MODEL,prompt:"这是一张试卷或题目照片。请去除图上所有手写笔迹、红笔批改、铅笔痕迹、涂改和脏污，只保留原图印刷体内容。严禁重绘、改写或替换任何印刷文字：文字必须与原图逐字一致，笔画形状、字号、间距、排版不得变形，尤其小型中文字与表格数字必须保持原样；只在笔迹所在位置做清理，其余区域保持像素级不变。必须严格保留：印刷文字的内容、顺序、字号与字体样式、段落与题目版式、编号、图形、表格、图表的结构和位置，以及整张图的构图和纸张底色不变。不要新增、删除、改写或重新排版任何印刷元素，仅在笔迹原位置做干净处理，输出一张整洁且与原图构图完全一致的试卷图。",size:size,ratio:ratio,extra_body:{image:[src],response_format:"b64_json"}};
   var data=await aiCallRaw(DEV_AI_ENDPOINT.replace("/chat/completions","/images/generations"),DEV_AI_KEY,bodyObj,180000);
   var d=data&&data.data&&data.data[0]?data.data[0]:null;
   var b64=d?d.b64_json:"";
@@ -2312,7 +2325,7 @@ async function genTextAnalysis(){
   var lp=document.querySelector("#cb-text-loading p");
   await genAnalysisFor(tc.api,tc.key,tc.model,lp,function(){if(lp)lp.textContent="AI 正在识别题目…";renderTextAI()},updateTextAICardAnalysis);
 }
-var TEXT_PROMPT='你是公务员考试(省考/国考)错题识别与题型归类专家。下面用户粘贴了文字题目，可能包含多道题。请逐题识别并严格按JSON数组返回，不要任何解释。\n\n硬性要求：\n1. 题干和全部选项必须逐字转录，禁止概括、改写或编造，看不清的字用“□”。\n2. answer：只有原文明确标注正确答案（如“答案：B”）才填字母，否则一律填null，禁止猜测。\n3. difficulty：只填整数1、2、3。\n4. 没有依据的analysis填null。\n\n每项字段：\nmodule：只能是常识判断/言语理解与表达/数量关系/判断推理/资料分析/申论/面试之一\nquestionType：只能从标准库选择：常识判断(政治常识/法律常识/经济常识/人文历史/科技生活/地理国情/管理公文)、言语理解与表达(逻辑填空/片段阅读/语句表达/文章阅读)、数量关系(数学运算/数字推理)、判断推理(图形推理/定义判断/类比推理/逻辑判断/事件排序)、资料分析(增长相关/比重相关/平均数与倍数/综合分析)、申论(归纳概括/综合分析/提出对策/贯彻执行/文章写作)、面试(综合分析/计划组织/应急应变/人际关系/自我认知)\nanswerFormat：单选/多选/判断/不定项/案例分析/公文写作/大作文/其他\nquestion：完整题干和全部选项\nanswer：原文明确标注的答案，否则null\nanalysis：简要解析，无依据null\ndifficulty：整数1或2或3\nsource：真题/模拟题/专项练习/未知\nerrorCause：知识点不熟/粗心大意/理解偏差/时间不够/审题错误/其他\nkeywords：只能从下方【考点库】该模块的考点中选择，最多3个，禁止自造名称、禁止带“高频/重点”等修饰词\n\n【判定规则】\n1. 图形、九宫格、折纸盒、找规律→判断推理-图形推理；先给定义再选符合项→定义判断；词语对→类比推理；论点论据→逻辑判断。\n2. 填空→言语理解与表达-逻辑填空；问主旨/意图/细节/推断→片段阅读；语句排序/填空→语句表达。\n3. 数字运算/方程/行程/工程/排列组合/概率→数量关系-数学运算；数字序列找规律→数字推理。\n4. 统计表/图/百分比/倍数/平均数→资料分析，按考点归入增长相关/比重相关/平均数与倍数/综合分析。\n5. 申论按设问归类；面试按测评要素归类。';
+var TEXT_PROMPT='你是公务员考试(省考/国考)错题识别与题型归类专家。下面用户粘贴了文字题目，可能包含多道题。请逐题识别并严格按JSON数组返回，不要任何解释。\n\n硬性要求：\n1. 题干和全部选项必须逐字转录，禁止概括、改写或编造，看不清的字用“□”。\n2. answer：只有原文明确标注正确答案（如“答案：B”）才填字母，否则一律填null，禁止猜测。\n3. difficulty：只填整数1、2、3。\n4. 没有依据的analysis填null。\n\n每项字段：\nmodule：只能是常识判断/言语理解与表达/数量关系/判断推理/资料分析/申论/面试/公共基础知识之一\nquestionType：只能从标准库选择：常识判断(政治常识/法律常识/经济常识/人文历史/科技生活/地理国情/管理公文)、言语理解与表达(逻辑填空/片段阅读/语句表达/文章阅读)、数量关系(数学运算/数字推理)、判断推理(图形推理/定义判断/类比推理/逻辑判断/事件排序)、资料分析(增长相关/比重相关/平均数与倍数/综合分析)、申论(归纳概括/综合分析/提出对策/贯彻执行/文章写作)、面试(综合分析/计划组织/应急应变/人际关系/自我认知)、公共基础知识(政治理论/法律基础/经济知识/管理基础/公文写作/科技人文/时事政治)\nanswerFormat：单选/多选/判断/不定项/案例分析/公文写作/大作文/其他\nquestion：完整题干和全部选项\nanswer：原文明确标注的答案，否则null\nanalysis：简要解析，无依据null\ndifficulty：整数1或2或3\nsource：真题/模拟题/专项练习/未知\nerrorCause：知识点不熟/粗心大意/理解偏差/时间不够/审题错误/其他\nkeywords：只能从下方【考点库】该模块的考点中选择，最多3个，禁止自造名称、禁止带“高频/重点”等修饰词\n\n【判定规则】\n1. 图形、九宫格、折纸盒、找规律→判断推理-图形推理；先给定义再选符合项→定义判断；词语对→类比推理；论点论据→逻辑判断。\n2. 填空→言语理解与表达-逻辑填空；问主旨/意图/细节/推断→片段阅读；语句排序/填空→语句表达。\n3. 数字运算/方程/行程/工程/排列组合/概率→数量关系-数学运算；数字序列找规律→数字推理。\n4. 统计表/图/百分比/倍数/平均数→资料分析，按考点归入增长相关/比重相关/平均数与倍数/综合分析。\n5. 申论按设问归类；面试按测评要素归类。';
 async function textRecognition(){
   var txt=document.getElementById("cb-text-inp").value.trim();
   if(!txt){toast("请先粘贴题目文字");return}
@@ -2387,7 +2400,7 @@ function saveTextAI(){
     },function(){n++;saved.push({id:sid,q:r.question||""});if(n>=aiR.length){toast("已保存 "+n+" 道错题");document.getElementById("cb-text-inp").value="";document.getElementById("cb-text-results").style.display="none";sv("dashboard");quietBackup();sbQueueSync();setTimeout(function(){warnDupAfterSave(saved)},1500)}});
   }
 }
-var PHOTO_REC_PROMPT='你是公务员考试(省考/国考)错题识别与题型归类专家。请分析这张试卷/练习照片，逐题识别所有错题，严格按JSON数组返回，不要任何解释。\n\n【最高优先：忽略手写与批改】\n照片上可能混有黑色签字笔手写字、红色批改（打叉、画圈、打勾、评分、签名、改错字）。手写内容和批改痕迹都不是题目本身：只逐字转录印刷体题干与选项，绝对禁止把手写字、批改字当成题目或答案转录；被手写覆盖看不清的印刷字用“□”代替，禁止臆测。红笔勾选/圈注仅用于判断 answer 字段，其内容不转录。\n\n【最重硬性要求】\n1. 题目必须逐字转录，禁止概括、改写或编造；看不清的字用“□”代替。\n2. 选项必须完整转录A/B/C/D原文；图形题的题干写“（图形题，原图见附图）”，图形细节写进visualDescription。\n3. 答案answer：只有图片中明确标注了正确答案（如“答案：B”、红色勾选、批改对勾）才填选项字母；否则一律填null，绝对禁止猜测。\n4. 难度difficulty：只能填整数1、2或3。\n5. 没有依据的解析analysis填null。\n\n数组每项字段：\nmodule：只能是常识判断/言语理解与表达/数量关系/判断推理/资料分析/申论/面试之一\nquestionType：具体题型，只能从下列标准库选择：常识判断(政治常识/法律常识/经济常识/人文历史/科技生活/地理国情/管理公文)、言语理解与表达(逻辑填空/片段阅读/语句表达/文章阅读)、数量关系(数学运算/数字推理)、判断推理(图形推理/定义判断/类比推理/逻辑判断/事件排序)、资料分析(增长相关/比重相关/平均数与倍数/综合分析)、申论(归纳概括/综合分析/提出对策/贯彻执行/文章写作)、面试(综合分析/计划组织/应急应变/人际关系/自我认知)\nanswerFormat：单选/多选/判断/不定项/案例分析/公文写作/大作文/其他\nquestion：逐字转录的完整题干和全部选项，图形题写“（图形题，原图见附图）”\nvisualDescription：图形推理/统计图/表格的详细视觉描述（图形的形状、数量、位置、方向、颜色；表格按行列完整转录全部数据），纯文字题填null\nanswer：图片中明确标注的正确答案字母，否则null\nanalysis：简要解析，无依据填null\ndifficulty：整数1或2或3\nsource：真题/模拟题/专项练习/未知\nerrorCause：知识点不熟/粗心大意/理解偏差/时间不够/审题错误/其他\nkeywords：只能从下方【考点库】该模块的考点中选择，最多3个，禁止自造名称、禁止带“高频/重点”等修饰词\n\n【判定规则】\n1. 图形、九宫格、折纸盒、找规律→判断推理-图形推理；先给定义再选符合项→定义判断；一对或多对词语→类比推理；论点论据推出结论→逻辑判断。\n2. 空缺词语填空→言语理解与表达-逻辑填空；问主旨/意图/细节/推断→片段阅读；语句排序或语句填空→语句表达。\n3. 数字运算、方程、行程、工程、排列组合、概率→数量关系-数学运算；数字序列找规律→数字推理。\n4. 统计表/统计图/百分比/倍数/平均数→资料分析，按考点归入增长相关/比重相关/平均数与倍数/综合分析。\n5. 【资料分析数字铁律】表格和图表必须逐行逐列读取数字，完整转录进visualDescription（格式如“年份/指标:数值”），保留小数点、百分号、负号、单位；数字必须与图片完全一致，禁止估算、四舍五入、漏写、编造；看不清的数字写“□”。题干引用的所有数值同样逐字转录。\n6. 申论小题按设问归类，写文章→文章写作。\n7. 面试题按测评要素归类。\n\n如果图片模糊无法识别，返回{"error":"图片无法识别"}。';
+var PHOTO_REC_PROMPT='你是公务员考试(省考/国考)错题识别与题型归类专家。请分析这张试卷/练习照片，逐题识别所有错题，严格按JSON数组返回，不要任何解释。\n\n【最高优先：忽略手写与批改】\n照片上可能混有黑色签字笔手写字、红色批改（打叉、画圈、打勾、评分、签名、改错字）。手写内容和批改痕迹都不是题目本身：只逐字转录印刷体题干与选项，绝对禁止把手写字、批改字当成题目或答案转录；被手写覆盖看不清的印刷字用“□”代替，禁止臆测。红笔勾选/圈注仅用于判断 answer 字段，其内容不转录。\n\n【最重硬性要求】\n1. 题目必须逐字转录，禁止概括、改写或编造；看不清的字用“□”代替。\n2. 选项必须完整转录A/B/C/D原文；图形题的题干写“（图形题，原图见附图）”，图形细节写进visualDescription。\n3. 答案answer：只有图片中明确标注了正确答案（如“答案：B”、红色勾选、批改对勾）才填选项字母；否则一律填null，绝对禁止猜测。\n4. 难度difficulty：只能填整数1、2或3。\n5. 没有依据的解析analysis填null。\n\n数组每项字段：\nmodule：只能是常识判断/言语理解与表达/数量关系/判断推理/资料分析/申论/面试/公共基础知识之一\nquestionType：具体题型，只能从下列标准库选择：常识判断(政治常识/法律常识/经济常识/人文历史/科技生活/地理国情/管理公文)、言语理解与表达(逻辑填空/片段阅读/语句表达/文章阅读)、数量关系(数学运算/数字推理)、判断推理(图形推理/定义判断/类比推理/逻辑判断/事件排序)、资料分析(增长相关/比重相关/平均数与倍数/综合分析)、申论(归纳概括/综合分析/提出对策/贯彻执行/文章写作)、面试(综合分析/计划组织/应急应变/人际关系/自我认知)、公共基础知识(政治理论/法律基础/经济知识/管理基础/公文写作/科技人文/时事政治)\nanswerFormat：单选/多选/判断/不定项/案例分析/公文写作/大作文/其他\nquestion：逐字转录的完整题干和全部选项，图形题写“（图形题，原图见附图）”\nvisualDescription：图形推理/统计图/表格的详细视觉描述（图形的形状、数量、位置、方向、颜色；表格按行列完整转录全部数据），纯文字题填null\nanswer：图片中明确标注的正确答案字母，否则null\nanalysis：简要解析，无依据填null\ndifficulty：整数1或2或3\nsource：真题/模拟题/专项练习/未知\nerrorCause：知识点不熟/粗心大意/理解偏差/时间不够/审题错误/其他\nkeywords：只能从下方【考点库】该模块的考点中选择，最多3个，禁止自造名称、禁止带“高频/重点”等修饰词\n\n【判定规则】\n1. 图形、九宫格、折纸盒、找规律→判断推理-图形推理；先给定义再选符合项→定义判断；一对或多对词语→类比推理；论点论据推出结论→逻辑判断。\n2. 空缺词语填空→言语理解与表达-逻辑填空；问主旨/意图/细节/推断→片段阅读；语句排序或语句填空→语句表达。\n3. 数字运算、方程、行程、工程、排列组合、概率→数量关系-数学运算；数字序列找规律→数字推理。\n4. 统计表/统计图/百分比/倍数/平均数→资料分析，按考点归入增长相关/比重相关/平均数与倍数/综合分析。\n5. 【资料分析数字铁律】表格和图表必须逐行逐列读取数字，完整转录进visualDescription（格式如“年份/指标:数值”），保留小数点、百分号、负号、单位；数字必须与图片完全一致，禁止估算、四舍五入、漏写、编造；看不清的数字写“□”。题干引用的所有数值同样逐字转录。\n6. 申论小题按设问归类，写文章→文章写作。\n7. 面试题按测评要素归类。\n8. 事业单位公共基础知识（公基）类题目→公共基础知识，按考点归入政治理论/法律基础/经济知识/管理基础/公文写作/科技人文/时事政治。\n\n如果图片模糊无法识别，返回{"error":"图片无法识别"}。';
 function guessRecMaxTok(src){
   return new Promise(function(res){
     var im=new Image();
@@ -2487,6 +2500,8 @@ async function analyzePhoto(){
     var items=rhit||await runRecognition(processed);
     if(!rhit&&items&&items.length)recCachePut(rk,processed,items.map(function(x){return JSON.parse(JSON.stringify(x))}));
     for(var i=0;i<items.length;i++)items[i].img=(items[i].box&&items[i].box.x!=null)?await cropImageRegion(processed,items[i].box):(items.length===1?processed:null);
+    var __hasClean=(photoOrig&&photoUrl&&photoUrl!==photoOrig);
+    for(var i=0;i<items.length;i++){if(__hasClean){items[i].imgOrig=(items[i].box&&items[i].box.x!=null)?await cropImageRegion(photoOrig,items[i].box):(items.length===1?photoOrig:null)}else items[i].imgOrig=null}
     aiR=items; aiPhotoCount=1;
     if(items&&items.length&&!rhit) vipMarkAiUsed();
     if(stopT){stopT();stopT=null}
@@ -3037,14 +3052,14 @@ function cleanInk(src,mode){
 async function saveAI(){
   if(!aiR.length) return; var now=new Date(), n=0, saved=[];
   photoQueue=[]; renderPhotoQueueHint();
-  for(var i=0;i<aiR.length;i++){var r=aiR[i];if(r.img){try{r.img=await compressImage(r.img,1600,0.8)}catch(e){}}}
+  for(var i=0;i<aiR.length;i++){var r=aiR[i];if(r.img){try{r.img=await compressImage(r.img,1600,0.8)}catch(e){}}if(r.imgOrig){try{r.imgOrig=await compressImage(r.imgOrig,1600,0.8)}catch(e){}}}
   for(var i=0;i<aiR.length;i++){ var r=aiR[i],m=MODS.indexOf(r.module)>=0?r.module:MODS[0];
     var sid="q_"+now.getTime()+"_"+Math.random().toString(36).slice(2,8)+"_"+i;
     dbAdd({id:sid,mod:m,q:r.question||"",a:r.answer||"",
       qtype:(QTYPES[m]||["其他"]).indexOf(r.questionType)>=0?r.questionType:(QTYPES[m]||["其他"])[0],
       qfmt:AF_TYPES.indexOf(r.answerFormat)>=0?r.answerFormat:AF_TYPES[0],
       diff:[1,2,3].indexOf(r.difficulty)>=0?r.difficulty:2,
-      src:r.source||"未知",cause:r.errorCause||"",verify:r.answer?"已核对":"待核对",kw:r.keywords||[],img:r.img||aiPhoto||null,notes:aiNotes(r)+(r.keywords&&r.keywords.length?("\n考点："+r.keywords.join("、")):""),lv:0,ef:2.5,iv:1,nr:now.toISOString(),rep:0,hist:[],ct:now.toISOString(),lr:null,ut:now.toISOString()
+      src:r.source||"未知",cause:r.errorCause||"",verify:r.answer?"已核对":"待核对",kw:r.keywords||[],img:r.img||aiPhoto||null,imgOrig:r.imgOrig||null,notes:aiNotes(r)+(r.keywords&&r.keywords.length?("\n考点："+r.keywords.join("、")):""),lv:0,ef:2.5,iv:1,nr:now.toISOString(),rep:0,hist:[],ct:now.toISOString(),lr:null,ut:now.toISOString()
     },function(){n++;saved.push({id:sid,q:r.question||""});if(n>=aiR.length){toast("已保存 "+n+" 道错题");resetPhotoUI();sv("dashboard");quietBackup();sbQueueSync();setTimeout(function(){warnDupAfterSave(saved)},1500)}});
   }
 }
@@ -3602,7 +3617,7 @@ function sbFetchAll(c){
   }
   return next().then(function(){return rows});
 }
-function sbStripImg(data){ if(data&&typeof data==="object"){var d2={};for(var k in data){if(k!=="img")d2[k]=data[k]}d2.hasImg=!!data.img;return d2} return data }
+function sbStripImg(data){ if(data&&typeof data==="object"){var d2={};for(var k in data){if(k!=="img"&&k!=="imgOrig")d2[k]=data[k]}d2.hasImg=!!data.img;return d2} return data }
 function sbRurlImg(c,path){return c.url+"/rest/v1/cb_img"+path}
 function sbImgUpsertBatch(c,items){
   function part(i){
@@ -3845,15 +3860,20 @@ function aiQuotaLeft(){return quotaLeftToday()}
 function todayUsed(){var d=localStorage.getItem("cb_day_date"),c=parseInt(localStorage.getItem("cb_day_used")||"0");return d===dk(new Date())?c:0}
 function quotaLeftToday(){return Math.max(0,dailyLimit()-todayUsed())}
 function quotaInit(){
+  if(!localStorage.getItem("cb_quota_reset_fix")){
+    localStorage.removeItem("cb_day_date");
+    localStorage.setItem("cb_day_used","0");
+    localStorage.setItem("cb_quota_reset_fix","1");
+  }
   vipPaint();
 }
 var DEV_AI_KEY="sk-YKkVrYnm5OSkIaa923BeMTM2Lk5e8WZ6D7aETqOZz1uWcBY6";
 var DEV_AI_ENDPOINT="https://apihub.agnes-ai.com/v1/chat/completions";
-var DEV_AI_VISION_MODEL="agnes-2.5-flash";
-var DEV_AI_TEXT_MODEL="agnes-2.5-flash";
+var DEV_AI_VISION_MODEL="agnes-3.0-flash";
+var DEV_AI_TEXT_MODEL="agnes-3.0-flash";
 var DEV_AI_CLEAN_MODEL="agnes-image-2.5-flash";
-var DEV_AI_VISION_MODEL_FALLBACK="agnes-2.5-flash";
-var DEV_AI_TEXT_MODEL_FALLBACK="agnes-2.5-flash";
+var DEV_AI_VISION_MODEL_FALLBACK="agnes-3.0-flash";
+var DEV_AI_TEXT_MODEL_FALLBACK="agnes-3.0-flash";
 function aiUseMode(){return todayUsed()<dailyLimit()?"daily":"none"}
 function visionModelChoice(){return localStorage.getItem("cb_vision_model")==="20"?"20":"25"}
 function batchConc(){var n=parseInt(localStorage.getItem("cb_batch_conc")||"4")||4;return Math.max(1,Math.min(10,n))}
@@ -3992,9 +4012,33 @@ function vipPaint(){
     if(u>=dailyLimit())h+=' · <span style="color:#dd6b20">今日已用完，0 点自动重置；激活码可升级每日 500 次</span>';
     el.innerHTML=h;
   }
+  updateQuotaUI();
+}
+function quotaStateText(){
+  var left=quotaLeftToday();
+  if(isVip()){var v=vipInfo();return "✅ 已激活：每日 "+DAILY_ACT_LIMIT+" 次 · 今日剩余 "+left+" 次"+(v&&v.expires?("（到期 "+new Date(v.expires).toLocaleDateString()+"）"):"（永久）")}
+  return "今日免费额度：剩余 "+left+" / "+DAILY_FREE_LIMIT+" 次 · 激活后每日 "+DAILY_ACT_LIMIT+" 次";
+}
+function updateQuotaUI(){
+  var p=document.getElementById("cb-photo-quota"); if(p)p.textContent=quotaStateText();
+  var d=document.getElementById("cb-quota-diag");
+  if(d)d.textContent="额度状态："+(isVip()?"已激活":"未激活")+" · 今日已用 "+todayUsed()+" 次 · 今日上限 "+dailyLimit()+" 次 · 剩余 "+quotaLeftToday()+" 次";
 }
 function vipActivate(){
   var code=(document.getElementById("cb-vip-code").value||"").trim().toUpperCase().replace(/[\s-]+/g,"-");
+  var km=code.match(/^KAB-(\d+)-([23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{8})-([23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{4})$/);
+  if(km){
+    var kq=parseInt(km[1]);
+    if(!(kq>0&&kq<=100000)){toast("激活码无效");return}
+    if(vipB32(vipHash(kq+"-"+km[2]+"-"+VIP_SECRET)%1048576,4)!==km[3]){toast("激活码无效，请核对后重试");return}
+    if(codeWasUsed(code)){toast("该激活码已被使用，无法重复激活");return}
+    localStorage.setItem("cb_vip",JSON.stringify({expires:Date.now()+365*86400000,days:365,code:code,at:Date.now(),legacy:true}));
+    markCodeUsed(code);
+    document.getElementById("cb-vip-code").value="";
+    vipPaint();
+    toast("🎉 已激活：每日 500 次额度（365 天）");
+    return;
+  }
   var m=code.match(/^GKB-(\d+)-([23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{8})-([23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{4})$/);
   if(!m){toast("激活码格式不正确（示例：GKB-9999-XXXXXXXX-XXXX）");return}
   var days=parseInt(m[1]);
@@ -4015,14 +4059,14 @@ function vipAiGate(feature){
   openVipModal(feature); return false;
 }
 function vipMarkAiUsed(){
-  var td=dk(new Date());
-  localStorage.setItem("cb_day_date",td);
-  localStorage.setItem("cb_day_used",String(Math.min(dailyLimit(),todayUsed()+1)));
+  var prev=todayUsed();
+  localStorage.setItem("cb_day_date",dk(new Date()));
+  localStorage.setItem("cb_day_used",String(Math.min(dailyLimit(),prev+1)));
   vipPaint();
 }
 function openVipModal(feature){
   var m=document.getElementById("cb-vip-modal"); if(!m)return;
-  var p=document.getElementById("cb-vip-msg"); if(p)p.textContent="“"+(feature||"该功能")+"”今日额度已用完（每天 30 次，激活后每日 500 次，0 点重置）。联系开发者 QQ 获取激活码可升级每日 500 次。";
+  var p=document.getElementById("cb-vip-msg"); if(p)p.textContent=(isVip()?"“"+(feature||"该功能")+"”今日额度已用完（每日 500 次，0 点自动重置）。":"你当前是免费额度（每日 30 次，已用完）。如果你已经输入过激活码却没生效，可能是换版本或清理数据导致激活信息丢失，请到「设置 → 额度与激活」重新输入（同一激活码在本机可再次使用）。");
   m.style.display="flex";
 }
 function closeVipModal(){var m=document.getElementById("cb-vip-modal");if(m)m.style.display="none"}
@@ -4142,7 +4186,7 @@ function bindEvents(){
   el=document.getElementById("cb-checkin-trend-mod"); if(el) el.addEventListener("change",renderCheckin);
   // OCR
   el=document.getElementById("cb-photo-camera"); if(el) el.addEventListener("click",function(){var fi=document.getElementById("cb-photo-inp");fi.setAttribute("capture","environment");fi.focus();fi.click()}); el=document.getElementById("cb-photo-gallery"); if(el) el.addEventListener("click",function(){var fi=document.getElementById("cb-photo-inp");if(!fi.hasAttribute("multiple"))fi.setAttribute("multiple","");fi.removeAttribute("capture");fi.focus();fi.click()});
-  (function(){var pv=document.getElementById("cb-photo-pv"); if(pv&&!document.getElementById("cb-photo-actions")){pv.insertAdjacentHTML("afterend",'<div id="cb-photo-qhint" style="display:none;font-size:0.75rem;color:var(--gold,#b8860b);background:rgba(184,134,11,0.10);border-radius:8px;padding:6px 10px;margin-bottom:8px"></div><div id="cb-photo-merge" style="display:none;gap:6px;margin-bottom:8px;flex-wrap:wrap"><button class="cb-btn ghost" onclick="mergePhotos(\'v\')" style="flex:1;font-size:0.78rem;padding:5px 8px;min-width:45%">↕ 上下拼接（跨页题）</button><button class="cb-btn ghost" onclick="mergePhotos(\'h\')" style="flex:1;font-size:0.78rem;padding:5px 8px;min-width:45%">↔ 左右拼接</button></div><div id="cb-photo-actions" style="display:none;gap:8px;margin-bottom:10px"><button class="cb-btn ghost" id="cb-photo-crop" style="flex:1;font-size:0.82rem">✂️ 裁剪照片</button><button class="cb-btn ghost" id="cb-photo-ai-clean" style="flex:1;font-size:0.82rem">🧽 AI 去笔迹</button><button class="cb-btn ghost" id="cb-photo-add" style="flex:1;font-size:0.82rem">➕ 继续添加</button><button class="cb-btn ghost" id="cb-photo-undo" style="flex:1;font-size:0.82rem;display:none">↩️ 恢复原图</button><button class="cb-btn ghost" id="cb-photo-clearq" style="flex:1;font-size:0.82rem;display:none">🗑 清空队列</button></div>')}})();
+  (function(){var pv=document.getElementById("cb-photo-pv"); if(pv&&!document.getElementById("cb-photo-actions")){pv.insertAdjacentHTML("afterend",'<div id="cb-photo-qhint" style="display:none;font-size:0.75rem;color:var(--gold,#b8860b);background:rgba(184,134,11,0.10);border-radius:8px;padding:6px 10px;margin-bottom:8px"></div><div id="cb-photo-merge" style="display:none;gap:6px;margin-bottom:8px;flex-wrap:wrap"><button class="cb-btn ghost" onclick="mergePhotos(\'v\')" style="flex:1;font-size:0.78rem;padding:5px 8px;min-width:45%">↕ 上下拼接（跨页题）</button><button class="cb-btn ghost" onclick="mergePhotos(\'h\')" style="flex:1;font-size:0.78rem;padding:5px 8px;min-width:45%">↔ 左右拼接</button></div><div id="cb-photo-actions" style="display:none;gap:8px;margin-bottom:10px"><button class="cb-btn ghost" id="cb-photo-crop" style="flex:1;font-size:0.82rem">✂️ 裁剪照片</button><button class="cb-btn ghost" id="cb-photo-ai-clean" style="flex:1;font-size:0.82rem">🧽 AI 去笔迹</button><button class="cb-btn ghost" id="cb-photo-add" style="flex:1;font-size:0.82rem">➕ 继续添加</button><button class="cb-btn ghost" id="cb-photo-undo" style="flex:1;font-size:0.82rem;display:none">↩️ 恢复原图</button><button class="cb-btn ghost" id="cb-photo-clearq" style="flex:1;font-size:0.82rem;display:none">🗑 清空队列</button></div><p style="font-size:0.68rem;color:#dd6b20;margin:8px 0 0;line-height:1.6">🧽 AI 去笔迹会重绘整张图，文字密集的页面可能把印刷字重画变形（识别成乱字）。文字多的题建议用「简洁录入」里的本地 去红笔/去蓝笔/去铅笔（不重绘文字），或点上方「恢复原图」。</p>')}})();
   (function(){var host=document.getElementById("cb-tab-photo");if(host&&!document.getElementById("cb-photo-mode")){host.insertAdjacentHTML("afterbegin",'<div id="cb-photo-mode" style="display:flex;gap:6px;margin-bottom:4px"><button class="cb-btn pri" id="cb-mode-fine" style="flex:1;font-size:0.75rem;padding:7px 4px">✨ 精细识别</button><button class="cb-btn ghost" id="cb-mode-fast" style="flex:1;font-size:0.75rem;padding:7px 4px">⚡ 快速识别</button><button class="cb-btn ghost" id="cb-mode-simple" style="flex:1;font-size:0.75rem;padding:7px 4px">📥 简洁录入</button></div><p id="cb-photo-mode-desc" style="margin:6px 2px 10px;font-size:0.7rem;color:var(--text2);line-height:1.55"></p>')}})();
   (function(){var host=document.getElementById("cb-photo-actions");if(host&&!document.getElementById("cb-simple-wrap")){host.insertAdjacentHTML("afterend",'<div id="cb-simple-wrap"><div id="cb-simple-clean" style="display:none;gap:6px;flex-wrap:wrap;margin-bottom:8px"><button class="cb-btn ghost" onclick="cleanInkPhoto(\'red\')" style="font-size:0.72rem;padding:4px 10px">去红笔</button><button class="cb-btn ghost" onclick="cleanInkPhoto(\'blue\')" style="font-size:0.72rem;padding:4px 10px">去蓝笔</button><button class="cb-btn ghost" onclick="cleanInkPhoto(\'pencil\')" style="font-size:0.72rem;padding:4px 10px">去铅笔</button><button class="cb-btn ghost" onclick="cleanInkPhoto(\'auto\')" style="font-size:0.72rem;padding:4px 10px">自动去笔迹</button><p style="font-size:0.66rem;color:var(--text2);margin:4px 0 0;width:100%">自动去笔迹不走 AI、不扣额度；若仍有黑色手写，可再点「🧽 AI 去笔迹」</p></div><div id="cb-simple-form" style="display:none;border-top:1px dashed var(--border);padding-top:10px"><p id="cb-simple-count" style="font-size:0.68rem;color:#8a6d1a;margin:0 0 6px"></p><label style="font-size:0.75rem;color:var(--text2)">模块</label><select id="cb-simple-mod" onchange="simpleModChg(this.value)" style="width:100%;box-sizing:border-box;border:1px solid var(--border);border-radius:8px;padding:7px;font-size:0.82rem;margin-bottom:8px;background:var(--card);color:var(--text)"></select><div class="cb-form-row"><div class="cb-form-col"><label>题型</label><select id="cb-simple-qtype" style="width:100%;box-sizing:border-box;border:1px solid var(--border);border-radius:8px;padding:7px;font-size:0.82rem;background:var(--card);color:var(--text)"></select></div><div class="cb-form-col"><label>答题形式</label><select id="cb-simple-fmt" style="width:100%;box-sizing:border-box;border:1px solid var(--border);border-radius:8px;padding:7px;font-size:0.82rem;background:var(--card);color:var(--text)"><option>单选</option><option>多选</option><option>判断</option><option>不定项</option><option>案例分析</option><option>公文写作</option><option>大作文</option><option>其他</option></select></div></div><div class="cb-form-row"><div class="cb-form-col"><label>错因</label><select id="cb-simple-cause" style="width:100%;box-sizing:border-box;border:1px solid var(--border);border-radius:8px;padding:7px;font-size:0.82rem;background:var(--card);color:var(--text)"><option>知识点不熟</option><option>粗心大意</option><option>理解偏差</option><option>时间不够</option><option>审题错误</option><option>其他</option></select></div><div class="cb-form-col"><label>难度</label><select id="cb-simple-diff" style="width:100%;box-sizing:border-box;border:1px solid var(--border);border-radius:8px;padding:7px;font-size:0.82rem;background:var(--card);color:var(--text)"><option value="1">⭐</option><option value="2" selected>⭐⭐</option><option value="3">⭐⭐⭐</option></select></div></div><div class="cb-form-row"><div class="cb-form-col"><label>来源</label><select id="cb-simple-src" style="width:100%;box-sizing:border-box;border:1px solid var(--border);border-radius:8px;padding:7px;font-size:0.82rem;background:var(--card);color:var(--text)"><option>未知</option><option>真题</option><option>模拟题</option><option>专项练习</option></select></div></div><label style="font-size:0.75rem;color:var(--text2)">考点（可自创，逗号分隔）</label><input id="cb-simple-kw" placeholder="如：增长相关、速算" style="width:100%;box-sizing:border-box;border:1px solid var(--border);border-radius:8px;padding:7px;font-size:0.82rem;margin-bottom:8px;background:var(--card);color:var(--text)"><label style="font-size:0.75rem;color:var(--text2)">答案（可选，填了自动标已核对）</label><input id="cb-simple-ans" placeholder="如：B" style="width:100%;box-sizing:border-box;border:1px solid var(--border);border-radius:8px;padding:7px;font-size:0.82rem;margin-bottom:8px;background:var(--card);color:var(--text)"><label style="font-size:0.75rem;color:var(--text2)">备注 / 错题原因</label><textarea id="cb-simple-notes" rows="2" placeholder="记一句为什么错…" style="width:100%;box-sizing:border-box;border:1px solid var(--border);border-radius:8px;padding:7px;font-size:0.82rem;margin-bottom:8px;background:var(--card);color:var(--text);resize:vertical"></textarea><div style="display:flex;gap:8px;margin-top:4px"><button class="cb-btn pri" onclick="saveSimpleQuestion()" style="flex:1">💾 保存错题</button><button class="cb-btn ghost" onclick="closeSimpleForm()" style="flex:1">取消</button></div></div></div>')}})();
   (function(){var host=document.getElementById("cb-ai-loading");if(host&&!document.getElementById("cb-ai-prog")){host.insertAdjacentHTML("afterend",'<div id="cb-ai-prog" style="display:none;margin:10px 0 4px;background:rgba(26,54,93,0.06);border:1px solid rgba(26,54,93,0.12);border-radius:10px;padding:8px 10px"><div style="display:flex;justify-content:space-between;align-items:center;font-size:0.72rem;color:var(--text2);margin-bottom:5px"><span id="cb-ai-prog-label">处理中…</span><span id="cb-ai-prog-time">已用 0 秒</span></div><div style="height:8px;background:rgba(26,54,93,0.10);border-radius:8px;overflow:hidden"><div id="cb-ai-prog-fill" style="height:100%;width:0%;background:linear-gradient(90deg,#2a4a7f,#b8860b);border-radius:8px;transition:width .45s"></div></div><p id="cb-ai-prog-eta" style="font-size:0.68rem;color:#8a6d1a;margin:4px 0 0"></p></div>')}})();
@@ -4202,7 +4246,7 @@ function bindEvents(){
   }
   el=document.getElementById("cb-crop-ok"); if(el) el.addEventListener("click",applyCrop);
   el=document.getElementById("cb-crop-cancel"); if(el) el.addEventListener("click",closeCrop);
-  (function(){var crop=document.getElementById("cb-crop");if(crop&&!document.getElementById("cb-crop-tools")){var td=document.createElement("div");td.id="cb-crop-tools";td.style.cssText="display:flex;gap:8px;margin-top:10px;align-items:center";td.innerHTML='<button class="cb-btn pri" id="cb-crop-mode-rect" style="font-size:0.75rem;padding:4px 10px">▭ 框选</button><button class="cb-btn ghost" id="cb-crop-mode-free" style="font-size:0.75rem;padding:4px 10px;color:#fff">✏️ 自由</button><button class="cb-btn ghost" id="cb-crop-clear" style="font-size:0.75rem;padding:4px 10px;color:#fff">↺ 重选</button><button class="cb-btn ghost" id="cb-crop-rotate-l" style="font-size:0.75rem;padding:4px 10px;color:#fff">↺ 左转</button><button class="cb-btn ghost" id="cb-crop-rotate-r" style="font-size:0.75rem;padding:4px 10px;color:#fff">↻ 右转</button>';var ok=document.getElementById("cb-crop-ok");if(ok)ok.parentNode.insertBefore(td,ok);}
+  (function(){var crop=document.getElementById("cb-crop");if(crop&&!document.getElementById("cb-crop-tools")){var td=document.createElement("div");td.id="cb-crop-tools";td.style.cssText="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;align-items:center";var gst="border:1.5px solid rgba(255,255,255,.40);color:#fff;font-size:0.75rem;padding:6px 12px;font-weight:700";td.innerHTML='<button class="cb-btn pri" id="cb-crop-mode-rect" style="font-size:0.75rem;padding:6px 12px;background:rgba(255,255,255,.20);border:1.5px solid rgba(255,255,255,.65);color:#fff;font-weight:700">▭ 框选</button><button class="cb-btn ghost" id="cb-crop-mode-free" style="'+gst+'">✏️ 自由</button><button class="cb-btn ghost" id="cb-crop-clear" style="'+gst+'">↺ 重选</button><button class="cb-btn ghost" id="cb-crop-rotate-l" style="'+gst+'">↺ 左转 90°</button><button class="cb-btn ghost" id="cb-crop-rotate-r" style="'+gst+'">↻ 右转 90°</button>';var ok=document.getElementById("cb-crop-ok");if(ok)ok.parentNode.insertBefore(td,ok);}
   var mr=document.getElementById("cb-crop-mode-rect");if(mr)mr.addEventListener("click",function(){if(!cropState)return;cropState.mode="rect";cropState.free=[];drawCrop();mr.className="cb-btn pri";var mfx=document.getElementById("cb-crop-mode-free");if(mfx){mfx.className="cb-btn ghost";mfx.style.color="#fff"}});
   var mfx=document.getElementById("cb-crop-mode-free");if(mfx)mfx.addEventListener("click",function(){if(!cropState)return;cropState.mode="free";cropState.rect=null;cropState.free=[];drawCrop();mfx.className="cb-btn pri";var mrx=document.getElementById("cb-crop-mode-rect");if(mrx){mrx.className="cb-btn ghost";mrx.style.color="#fff"}});
   var cl=document.getElementById("cb-crop-clear");if(cl)cl.addEventListener("click",function(){if(!cropState)return;cropState.rect=null;cropState.free=[];drawCrop()});
@@ -4227,12 +4271,40 @@ function bindEvents(){
   // Settings
   el=document.getElementById("cb-btn-save-set"); if(el) el.addEventListener("click",saveSettings);
   (function(){var sc=document.querySelector("#cb-view-settings .cb-card"); if(sc&&!document.getElementById("cb-vip-status")){var div=document.createElement("div");div.className="cb-setting";div.innerHTML='<h3>👑 额度与激活</h3><div id="cb-vip-status" style="font-size:0.8rem;margin-bottom:6px"></div><div style="display:flex;gap:6px"><input type="text" id="cb-vip-code" placeholder="输入激活码，如 GKB-9999-XXXXXXXX-XXXX" style="flex:1;border:1px solid var(--border);border-radius:8px;padding:8px;font-size:0.8rem"><button class="cb-btn gold" id="cb-btn-vip-activate" style="font-size:0.8rem;padding:6px 12px">激活</button></div><p style="font-size:0.72rem;color:var(--text2);margin:6px 0 0">每天默认 30 次识图额度（0 点自动重置）；激活码可升级到每日 500 次。获取激活码：点下方按钮联系开发者 QQ。</p>';var first=sc.querySelector(".cb-setting");if(first)sc.insertBefore(div,first);else sc.appendChild(div)}})();
-  (function(){var st=document.getElementById("cb-vip-status");if(st&&!document.getElementById("cb-act-codes")){var div=document.createElement("div");div.id="cb-act-codes";div.style.cssText="margin:8px 0 0;font-size:0.7rem;color:var(--text2);line-height:1.7;background:rgba(184,134,11,0.08);border:1px dashed rgba(184,134,11,0.35);border-radius:8px;padding:8px 10px";div.innerHTML='<b style="color:#8a6d1a">🎁 可用激活码（每日 500 次 · 365 天）：</b><br>输入以下任意一个即可解锁，每个设备可用一次：<br><span style="font-size:0.66rem;word-break:break-all">GKB-365-EJKN78JY-PNYA　GKB-365-Z3GWVFR7-PKQG　GKB-365-S5HY57G9-3XAD　GKB-365-FXCVPD3F-L6AC　GKB-365-PU257DEA-7LVV　GKB-365-CL3NQZWQ-J9UX　GKB-365-JQJWQCES-ETWY　GKB-365-GP2BB4LK-D8B6　GKB-365-LJ9ALKAT-NUFE　GKB-365-PC32ESBA-Z5SX　GKB-365-P99SHQBN-PNPE　GKB-365-899X9R32-WL5E　GKB-365-Z2HFLCCE-AVK9　GKB-365-4Y4WMFJX-Z6E9　GKB-365-ZMATLWTG-KNLE</span>';st.parentNode.insertBefore(div,st.nextSibling)}})();
-  (function(){if(!document.getElementById("cb-vip-modal")){var d=document.createElement("div");d.innerHTML='<div id="cb-vip-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.72);z-index:330;align-items:center;justify-content:center;padding:16px;box-sizing:border-box"><div style="background:var(--card);border-radius:12px;padding:18px;width:100%;max-width:400px"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><h3 style="margin:0">🔒 需要次数额度</h3><button id="cb-vip-close" style="border:none;background:none;cursor:pointer;font-size:1rem;color:var(--text2)">✕</button></div><p id="cb-vip-msg" style="font-size:0.85rem;margin:0 0 10px"></p><ul style="font-size:0.78rem;color:var(--text2);margin:0 0 12px;padding-left:16px"><li>AI 识别 / 解析 / 学考点 / 变式等共用每日 30 次额度（0 点重置），激活后每日 500 次</li><li>激活码解锁每日 500 次，联系开发者 QQ 获取</li></ul><div style="display:flex;gap:8px"><button class="cb-btn gold" id="cb-vip-gosettings" style="flex:1">联系开发者获取</button><button class="cb-btn ghost" id="cb-vip-later" style="flex:1">先不用</button></div></div></div>';document.body.appendChild(d.firstChild)}})();
+  var ACT_CODES=["GKB-365-ZT545MFQ-JAHS","GKB-365-BZKRT2WS-C59F","GKB-365-9TWLUGUN-LG4T","GKB-365-2XSGBVYM-6BYL","GKB-365-S9E6LT28-H52K","GKB-365-5GJ5MK5N-3LAL","GKB-365-CQEWJRBM-Q5WX","GKB-365-HG2USKD5-6AH7","GKB-365-UHRMXRK8-SV3X","GKB-365-92B4GFKV-BLU3","GKB-365-RYQ4D576-ZWNC","GKB-365-LNSMKCWB-PUUX","GKB-365-BK2NQ7B5-W6XL","GKB-365-Q3LDCLY9-AANP","GKB-365-CYBAVGRY-J9TR"];
+  function copyTextLite(t){
+    try{ if(navigator.clipboard&&navigator.clipboard.writeText){ return navigator.clipboard.writeText(t); } }catch(e){}
+    return new Promise(function(res,rej){
+      try{ var ta=document.createElement("textarea"); ta.value=t; ta.style.position="fixed"; ta.style.left="-9999px"; document.body.appendChild(ta); ta.select(); var ok=document.execCommand("copy"); document.body.removeChild(ta); ok?res():rej(new Error("copy failed")); }catch(e2){ rej(e2) }
+    });
+  }
+  function useActCode(code){
+    if(!code) return;
+    var inp=document.getElementById("cb-vip-code"); if(inp){ inp.value=code; try{inp.focus()}catch(e){} }
+    copyTextLite(code).then(function(){ toast("已复制并填入，点「激活」即可",2800); }, function(){ toast("已填入输入框，点「激活」即可",2800); });
+  }
+  function copyAllActCodes(){
+    copyTextLite(ACT_CODES.join(" ")).then(function(){ toast("已复制全部 "+ACT_CODES.length+" 个激活码",2400); }, function(){ toast("复制失败，可点单个激活码自动填入",2600); });
+  }
+  (function(){
+    var st=document.getElementById("cb-vip-status");
+    if(st&&!document.getElementById("cb-act-codes")){
+      var div=document.createElement("div"); div.id="cb-act-codes";
+      div.style.cssText="margin:8px 0 0;font-size:0.7rem;color:var(--text2);line-height:1.7;background:rgba(184,134,11,0.08);border:1px dashed rgba(184,134,11,0.35);border-radius:8px;padding:8px 10px";
+      var chipStyle="margin:3px 4px 0 0;font-size:0.62rem;padding:4px 8px;border-radius:8px;border:1px solid rgba(184,134,11,0.45);background:rgba(255,255,255,.92);color:#8a6d1a;cursor:pointer";
+      var chips=ACT_CODES.map(function(c){ return '<button class="cb-actcode" data-code="'+c+'" style="'+chipStyle+'">'+c+'</button>'; }).join("");
+      div.innerHTML='<b style="color:#8a6d1a">🎁 可用激活码（每日 500 次 · 365 天）</b>　<button id="cb-act-copyall" style="'+chipStyle+';font-weight:700">📋 复制全部</button><br>点任意一个即可自动复制并填入上面的输入框，再点「激活」：<div style="margin-top:2px;word-break:break-all">'+chips+'</div>';
+      st.parentNode.insertBefore(div,st.nextSibling);
+      var dg=document.createElement("div"); dg.id="cb-quota-diag"; dg.style.cssText="margin:6px 0 0;font-size:0.72rem;color:var(--text2)"; st.parentNode.insertBefore(dg,div.nextSibling);
+      div.addEventListener("click",function(e){ var b=e.target&&e.target.closest?e.target.closest(".cb-actcode"):null; if(b){ useActCode(b.getAttribute("data-code")) } });
+      var ca=document.getElementById("cb-act-copyall"); if(ca) ca.addEventListener("click",copyAllActCodes);
+    }
+  })();
+  (function(){if(!document.getElementById("cb-vip-modal")){var d=document.createElement("div");d.innerHTML='<div id="cb-vip-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.72);z-index:330;align-items:center;justify-content:center;padding:16px;box-sizing:border-box"><div style="background:var(--card);border-radius:12px;padding:18px;width:100%;max-width:400px"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><h3 style="margin:0">🔒 需要次数额度</h3><button id="cb-vip-close" style="border:none;background:none;cursor:pointer;font-size:1rem;color:var(--text2)">✕</button></div><p id="cb-vip-msg" style="font-size:0.85rem;margin:0 0 10px"></p><ul style="font-size:0.78rem;color:var(--text2);margin:0 0 12px;padding-left:16px"><li>AI 识别 / 解析 / 学考点 / 变式等共用每日 30 次额度（0 点重置），激活后每日 500 次</li><li>激活码解锁每日 500 次，联系开发者 QQ 获取</li></ul><div style="display:flex;gap:8px"><button class="cb-btn gold" id="cb-vip-gosettings" style="flex:1">去输入激活码</button><button class="cb-btn ghost" id="cb-vip-later" style="flex:1">先不用</button></div></div></div>';document.body.appendChild(d.firstChild)}})();
   el=document.getElementById("cb-btn-vip-activate"); if(el) el.addEventListener("click",vipActivate);
   el=document.getElementById("cb-vip-close"); if(el) el.addEventListener("click",closeVipModal);
   el=document.getElementById("cb-vip-later"); if(el) el.addEventListener("click",closeVipModal);
-  el=document.getElementById("cb-vip-gosettings"); if(el) el.addEventListener("click",function(){closeVipModal();vipShopOpen()});
+  el=document.getElementById("cb-vip-gosettings"); if(el) el.addEventListener("click",function(){closeVipModal();sv("settings");setTimeout(function(){var t=document.getElementById("cb-vip-code");if(t){t.focus();try{t.scrollIntoView({block:"center"})}catch(e){}}},300)});
   (function(){if(!document.getElementById("cb-qq-modal")){var d=document.createElement("div");d.innerHTML='<div id="cb-qq-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.72);z-index:350;align-items:center;justify-content:center;padding:16px;box-sizing:border-box"><div style="background:var(--card);border-radius:12px;padding:18px;width:100%;max-width:400px"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px"><h3 style="margin:0">💬 联系开发者</h3><button id="cb-qq-close" style="border:none;background:none;cursor:pointer;font-size:1rem;color:var(--text2)">✕</button></div><p id="cb-qq-msg" style="font-size:0.85rem;margin:0 0 8px"></p><div style="font-size:1.5rem;font-weight:800;color:var(--pri);margin:6px 0 12px;text-align:center">2840542949</div><div style="display:flex;gap:8px"><button class="cb-btn gold" id="cb-qq-copy" style="flex:1">📋 复制 QQ 号</button><button class="cb-btn ghost" id="cb-qq-later" style="flex:1">稍后再说</button></div></div></div>';document.body.appendChild(d.firstChild)}})();
   (function(){if(!document.getElementById("cb-dup-modal")){var d2=document.createElement("div");d2.innerHTML='<div id="cb-dup-modal" onclick="if(event.target===this)this.style.display=\'none\'" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.72);z-index:400;align-items:center;justify-content:center;padding:16px;box-sizing:border-box"><div style="background:var(--card);border-radius:14px;width:100%;max-width:520px;max-height:86vh;display:flex;flex-direction:column;overflow:hidden"><div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border)"><h3 style="margin:0">🔍 重复题目查重</h3><button id="cb-dup-close" onclick="document.getElementById(\'cb-dup-modal\').style.display=\'none\'" style="border:none;background:none;cursor:pointer;font-size:1.1rem;color:var(--text2)">✕</button></div><div id="cb-dup-body" style="flex:1;overflow-y:auto;padding:12px 16px"></div><div style="padding:10px 16px;border-top:1px solid var(--border);display:flex;gap:8px"><button class="cb-btn pri" id="cb-dup-keep" onclick="dupKeepFirst(this)" style="flex:1;font-size:0.82rem">✅ 每组保留第一条，删除其余</button></div></div></div>';document.body.appendChild(d2.firstChild)}})();
   el=document.getElementById("cb-qq-close"); if(el) el.addEventListener("click",closeQqModal);
