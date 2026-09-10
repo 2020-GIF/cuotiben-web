@@ -359,6 +359,7 @@ body.dark #cb-topbar{background:linear-gradient(120deg,#3a242b,#6e3a4d 60%,#5531
     <div class="cb-setting"><h3>🎯 目标考试</h3><label>考试名称（选填）</label><input type="text" id="cb-set-exam-name" placeholder="如：2027 国考"><label>考试日期</label><input type="date" id="cb-set-exam-date"><p style="font-size:0.7rem;color:var(--text2);margin:4px 0 0">首页显示倒计时，AI 助手会按剩余天数调整复习建议</p></div>
     <div class="cb-setting"><h3>🎯 识别模式</h3><label>拍照 / 申论识图使用（切换即生效，自动保存）</label><select id="cb-set-vision" onchange="cbSetVision(this.value)"><option value="25">精细模式（推荐）</option><option value="20">快速模式（更省时，复杂识别稍弱）</option></select><p style="font-size:0.7rem;color:var(--text2);margin:4px 0 0">精细模式超过 40 秒未返回时，自动用快速模式兜底</p></div>
     <div class="cb-setting"><h3>📚 批量识图</h3><label>同时识别的照片数（切换即生效，自动保存）</label><select id="cb-set-batch" onchange="cbSetBatch(this.value)"><option value="2">2 张</option><option value="3">3 张</option><option value="4" selected>4 张（推荐）</option><option value="5">5 张</option><option value="8">8 张</option><option value="10">10 张</option></select><p style="font-size:0.7rem;color:var(--text2);margin:4px 0 0">并发越高整体越快，但服务端限流时可能一起变慢或失败</p></div>
+    <div class="cb-setting"><h3>🖼 带笔迹原图</h3><label style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="cb-set-marked" class="cb-set-marked-cb"> 在题目详情 / 复习页显示「带笔迹原图」</label><p style="font-size:0.7rem;color:var(--text2);margin:4px 0 0">用去笔迹功能时，会另外保留一张「裁剪后、还没去笔迹」的图，方便和原题对照。不想看就关掉，也可以在题目详情页里一键隐藏。</p></div>
     <div class="cb-setting"><h3>🎨 外观</h3><label style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><input type="checkbox" id="cb-set-dark"> 深色模式</label><label>字号</label><select id="cb-set-font"><option value="14">小</option><option value="16" selected>中</option><option value="18">大</option></select></div>
     <div class="cb-setting"><h3>🔔 提醒</h3><label>每日提醒时间</label><input type="time" id="cb-set-remind" value="08:00"></div>
     <div class="cb-setting"><h3>📖 使用教程</h3><button class="cb-btn ghost" onclick="openTutorial()" style="font-size:0.8rem;padding:6px 12px">👀 查看全部功能说明</button><p style="font-size:0.7rem;color:var(--text2);margin-top:4px">首次使用建议先看教程，覆盖录入、识别、查重、组卷、云同步、额度等全部功能</p></div>
@@ -482,7 +483,7 @@ function srsCalc(q,rating){
 
 // ===== STATE =====
 var cv="dashboard", rq=[], ri=0, rs=[0,0,0,0,0], cr=-1;
-var aiR=[], photoUrl="", aiPhoto="", photoOrig="", aiPhotoCount=0, photoQueue=[], photoCurrentNewest=true, simplePending=[];
+var aiR=[], photoUrl="", aiPhoto="", photoOrig="", photoMarked="", photoDeInked=false, aiPhotoCount=0, photoQueue=[], photoCurrentNewest=true, simplePending=[];
 var aiTaskActive=false;
 function aiTaskStart(){aiTaskActive=true;try{if(window.Android&&window.Android.startAiTask)window.Android.startAiTask("正在识图/生成解析，切到其它应用也会继续…")}catch(e){}}
 function aiTaskStop(){aiTaskActive=false;try{if(window.Android&&window.Android.stopAiTask)window.Android.stopAiTask()}catch(e){}}
@@ -528,7 +529,7 @@ function doMergePhotos(imgs,dir){
   });
   photoQueue=[];
   photoUrl=c.toDataURL("image/jpeg",0.9);
-  photoOrig=photoUrl;aiPhoto="";
+  photoOrig=photoUrl;photoMarked=photoUrl;photoDeInked=false;aiPhoto="";
   var img=document.getElementById("cb-photo-img");if(img)img.src=photoUrl;
   var pv=document.getElementById("cb-photo-pv");if(pv)pv.style.display="";
   var un=document.getElementById("cb-photo-undo");if(un)un.style.display="none";
@@ -595,7 +596,8 @@ function cleanInkPhoto(mode){
   if(!photoUrl){toast("请先选择图片");return}
   toast("正在去除笔迹…");
   cleanInk(photoUrl,mode).then(function(d){
-    photoUrl=d;aiPhoto="";
+    if(!photoDeInked)photoMarked=photoUrl;
+    photoUrl=d;photoDeInked=true;aiPhoto="";
     var im=document.getElementById("cb-photo-img");if(im)im.src=d;
     var un=document.getElementById("cb-photo-undo");if(un)un.style.display="";
     toast("已去除笔迹，可保存");
@@ -620,11 +622,11 @@ function saveSimpleQuestion(){
   var sid="q_"+now.getTime()+"_"+Math.random().toString(36).slice(2,8)+"_s";
   dbAdd({id:sid,mod:mod,q:"（图片题，原图见附图）",a:a,
     qtype:qtype.value,qfmt:fmt?fmt.value:"单选",diff:diff?parseInt(diff.value)||2:2,src:src?src.value:"未知",
-    cause:cause?cause.value:"其他",verify:a?"已核对":"待核对",kw:out,img:photoUrl,imgOrig:(photoOrig&&photoUrl&&photoOrig!==photoUrl)?photoOrig:null,notes:(notes?notes.value.trim():"")+(out.length?("\n考点："+out.join("、")):""),
+    cause:cause?cause.value:"其他",verify:a?"已核对":"待核对",kw:out,img:photoUrl,imgOrig:markedImgOf(),notes:(notes?notes.value.trim():"")+(out.length?("\n考点："+out.join("、")):""),
     lv:0,ef:2.5,iv:1,nr:now.toISOString(),rep:0,hist:[],ct:now.toISOString(),lr:null,ut:now.toISOString()
   },function(){
     if(simplePending.length){
-      photoUrl=simplePending.shift(); photoOrig=photoUrl; aiPhoto="";
+      photoUrl=simplePending.shift(); photoOrig=photoUrl; photoMarked=photoUrl; photoDeInked=false; aiPhoto="";
       var im=document.getElementById("cb-photo-img"); if(im)im.src=photoUrl;
       fillSimpleForm();
       var form=document.getElementById("cb-simple-form"); if(form)form.style.display="";
@@ -794,7 +796,7 @@ function normKeywords(mod,arr){
 }
 var examQs=[], examAns={}, examTimer=null, examSec=0;
 var kwFilter="";
-var APP_VERSION_CODE=120; var APP_VERSION_NAME="1.10.62";
+var APP_VERSION_CODE=121; var APP_VERSION_NAME="1.10.63";
 
 // ===== VIEW SWITCH =====
 function sv(v){
@@ -895,7 +897,7 @@ function renderRQ(){
   var parsed=splitOptions(q.q);
   var qText=parsed?parsed.stem:(q.q||"");
   document.getElementById("cb-review-q").innerHTML=(q.img?'<div style="margin-bottom:8px"><img src="'+q.img+'" onclick="openImgView(this.src)" style="max-width:100%;max-height:260px;object-fit:contain;border-radius:8px;border:1px solid var(--border);cursor:zoom-in"><div style="font-size:0.68rem;color:var(--text2);margin-top:2px">🖼 原题图片（点击放大）</div></div>':'')+(q.verify==="待核对"?'<div style="color:#dd6b20;font-size:0.75rem;margin-bottom:6px">⚠️ 答案待核对，请对照原题确认</div>':'')+qText.replace(/</g,"&lt;").replace(/>/g,"&gt;");
-  if(q.imgOrig) document.getElementById("cb-review-q").innerHTML+='<div style="margin-bottom:8px"><img src="'+q.imgOrig+'" onclick="openImgView(this.src)" style="max-width:100%;max-height:200px;object-fit:contain;border-radius:8px;border:1px solid var(--border);cursor:zoom-in"><div style="font-size:0.68rem;color:var(--text2);margin-top:2px">🖼 原图（未去笔迹，点击放大）</div></div>';
+  if(q.imgOrig){var mv=markedImgVisible();document.getElementById("cb-review-q").innerHTML+='<div class="cb-marked-blk" style="margin-bottom:8px;'+(mv?"":"display:none")+'"><img src="'+q.imgOrig+'" onclick="openImgView(this.src)" style="max-width:100%;max-height:200px;object-fit:contain;border-radius:8px;border:1px solid var(--border);cursor:zoom-in"><div style="font-size:0.68rem;color:var(--text2);margin-top:2px">🖼 带笔迹原图（裁剪后未去笔迹，点击放大）</div></div><button class="cb-btn ghost cb-marked-btn" onclick="toggleMarkedImg()" style="font-size:0.7rem;padding:4px 10px;margin-bottom:8px">'+(mv?"🙈 隐藏带笔迹原图":"👁 显示带笔迹原图")+'</button>'}
   var optDiv=document.getElementById("cb-review-opts");
   var ans=q.a?String(q.a).replace(/\s/g,"").toUpperCase():"";
   if(parsed&&parsed.opts.length>=2&&/^[A-E]$/.test(ans)){
@@ -1222,7 +1224,7 @@ function showDetail(id){
     document.getElementById("cb-modal-verify").style.display=q.verify==="待核对"?"":"none";
     document.getElementById("cb-modal-title").innerHTML='<span class="cb-mod '+modCls(q.mod||MODS[0])+'">'+q.mod+'</span>';
     document.getElementById("cb-modal-q").innerHTML=(q.img?'<img src="'+q.img+'" onclick="openImgView(this.src)" style="max-width:100%;max-height:260px;object-fit:contain;border-radius:8px;margin-bottom:8px;cursor:zoom-in">':'')+String(q.q||"").replace(/</g,"&lt;").replace(/>/g,"&gt;");
-    if(q.imgOrig){document.getElementById("cb-modal-q").innerHTML+='<div style="font-size:0.68rem;color:var(--text2);margin:2px 0 6px">🖼 原图（未去笔迹）</div><img src="'+q.imgOrig+'" onclick="openImgView(this.src)" style="max-width:100%;max-height:220px;object-fit:contain;border-radius:8px;margin-bottom:8px;cursor:zoom-in;border:1px solid var(--border)">'}
+    if(q.imgOrig){var mv2=markedImgVisible();document.getElementById("cb-modal-q").innerHTML+='<div style="display:flex;align-items:center;gap:8px;margin:2px 0 6px"><span style="font-size:0.68rem;color:var(--text2)">🖼 带笔迹原图（裁剪后未去笔迹）</span><button class="cb-btn ghost cb-marked-btn" onclick="toggleMarkedImg()" style="font-size:0.68rem;padding:3px 9px">'+(mv2?"🙈 隐藏":"👁 显示")+'</button></div><div class="cb-marked-blk"'+(mv2?"":' style="display:none"')+'><img src="'+q.imgOrig+'" onclick="openImgView(this.src)" style="max-width:100%;max-height:220px;object-fit:contain;border-radius:8px;margin-bottom:8px;cursor:zoom-in;border:1px solid var(--border)"></div>'}
     document.getElementById("cb-modal-a").textContent=q.a||"";
     if(q.notes){document.getElementById("cb-modal-notes-wrap").style.display="";document.getElementById("cb-modal-notes").textContent=q.notes}else{document.getElementById("cb-modal-notes-wrap").style.display="none"}
     document.getElementById("cb-modal-meta").innerHTML='<span>题型：'+(q.qtype||"")+'</span><span>答题形式：'+(q.qfmt||"")+'</span><span>核对：'+(q.verify||"")+'</span><span>难度：'+["","⭐","⭐⭐","⭐⭐⭐"][q.diff||1]+'</span><span>错因：'+(q.cause||"")+'</span><span>复习：'+q.rep+'次</span><span>等级：L'+(q.lv||0)+'</span><span>下次：'+fd(q.nr)+'</span>';
@@ -1598,6 +1600,7 @@ function warnDupAfterSave(saved){
   },1200);
 }
 var CHANGELOG=[
+{v:"1.10.63",t:"去笔迹的对照图更实用：保留的是「裁剪后、还没去笔迹」的那张（和错题区域一致，不再是整张照片），详情页/复习页可一键隐藏，设置里也能长期关闭"},
 {v:"1.10.62",t:"修复裁剪界面按钮显示（旋转、重选、自由恢复正常且更清晰）；安装后系统里显示的版本号与设置里一致；跨天统计异常，新的一天自动从零开始计算"},
 {v:"1.10.61",t:"激活码支持点击直接复制并自动填入输入框，另提供「复制全部」，不用再长按选择"},
 {v:"1.10.60",t:"兼容旧版次数包激活码（输入即按每日 500 次生效）；额度提示更清楚，可一键跳去输入激活码"},
@@ -1731,7 +1734,7 @@ function openTutorial(){
   +'<details open style="margin:6px 0;border:1px solid var(--border);border-radius:10px;padding:6px 10px"><summary style="cursor:pointer;font-weight:700">🏠 首页与复习</summary><div style="padding:6px 0 2px">顶部三个快捷按钮：拍照识别、今日复习、AI 助手，常用功能一键直达；下方有随机元气标语给你打气。<br>四个数字：今日待复习、总题数、已掌握、连续打卡天数，一眼掌握状态。<br>今日复习计划：每天按记忆规律自动排出该复习的题，点“开始复习”进入卡片式复习。<br>复习流程：先看题回忆答案 → 点“显示答案”自评 → 用 1~5 星评分（全忘了一直到完美）→ 系统按评分自动安排下次复习，掌握越牢间隔越久。<br>看讲解：复习时选完答案或显示答案后，点“📖 看讲解”直接看本题解析和已缓存的技巧讲解，不用退出。<br>答案有误：复习中可直接修改正确答案并“标记已核对”，避免带着错答案复习。<br>考前速览：设置目标考试后，剩余 14 天内首页会出现“🔥 考前速览”，一键查看高频考点、最薄弱 20 题并直接开始复习。<br>下方还有各模块掌握度、即将到期的题目，方便提前安排。</div></details>'
   +'<details style="margin:6px 0;border:1px solid var(--border);border-radius:10px;padding:6px 10px"><summary style="cursor:pointer;font-weight:700">➕ 录入错题</summary><div style="padding:6px 0 2px">录入页有四个页签：手动录入 / 拍照识别 / 文字识别 / 申论复盘。<br>手动录入：选模块（言语理解、判断推理、数量分析、资料分析、常识判断、申论）、填题目和答案/解析，可选题型、答题形式、难度、来源、错因，保存后自动进入复习计划。<br>文字识别：把一题或多题文字（含选项）直接粘贴，自动归类并生成速解解析，适合网上复制的题目。<br>保存识别结果前可逐题查看修改，确认后点“全部保存”一次性入库。</div></details>'
   +'<details style="margin:6px 0;border:1px solid var(--border);border-radius:10px;padding:6px 10px"><summary style="cursor:pointer;font-weight:700">📷 拍照识别与批量识图</summary><div style="padding:6px 0 2px">拍照：直接调起相机拍试卷；相册：从相册选照片（可多选）。<br>自动忽略手写和红笔批改，只识别印刷体题目；资料分析会逐格读取表格数字。<br>批量识图：一次识别多张照片，默认同时处理 4 张（设置里可调 2~10 张）；多题照片会自动按题裁剪，图形推理、表格等按原图解析更准确。<br>识别缓存：同一张图识别过一次，30 天内再识别直接出结果、不扣额度。<br>题目被截断/跨页：先拍第一部分，点“继续添加”再拍第二部分，然后点“上下拼接”合成一张再识别，跨页题也能完整识别。<br>识别结果先展示，解析在后台逐题补充，可边看边保存。<br>切到后台（锁屏或换应用）识别也会继续，不要直接划掉 App。<br>只有拍照识图扣额度，文字识别和申论文字复盘不扣。</div></details>'
-  +'<details style="margin:6px 0;border:1px solid var(--border);border-radius:10px;padding:6px 10px"><summary style="cursor:pointer;font-weight:700">✂️ 裁剪与去笔迹</summary><div style="padding:6px 0 2px">拍照/选图后默认不弹裁剪，直接点“开始识别”即可——识别会自动按题框选，多题照片也能自动分题。<br>需要精细裁切时再点“✂️ 裁剪照片”：支持自由框选，按住拖动框出想保留的区域，像手动裁图一样灵活。<br>AI 去笔迹：一键去除手写、红笔、铅笔痕迹，只保留印刷体；处理后可以“恢复原图”。<br>继续添加：拍完一张可以继续拍/选，凑成队列一次识别；“清空队列”可重来。</div></details>'
+  +'<details style="margin:6px 0;border:1px solid var(--border);border-radius:10px;padding:6px 10px"><summary style="cursor:pointer;font-weight:700">✂️ 裁剪与去笔迹</summary><div style="padding:6px 0 2px">拍照/选图后默认不弹裁剪，直接点“开始识别”即可——识别会自动按题框选，多题照片也能自动分题。<br>需要精细裁切时再点“✂️ 裁剪照片”：支持自由框选，按住拖动框出想保留的区域，像手动裁图一样灵活；裁剪界面里还能左转/右转 90°、重新框选。<br>去笔迹：支持本地去红笔/去蓝笔/去铅笔（不重绘文字）和 AI 去笔迹。<br>去笔迹后会同时保存两张图：一张是去掉笔迹的干净图（平时复习看这张），一张是“裁剪后、还没去笔迹”的原图，方便对照自己当时错在哪。不想看到带笔迹那张，可在题目详情页点「🙈 隐藏」，或在 设置 → 🖼 带笔迹原图 里关掉。<br>继续添加：拍完一张可以继续拍/选，凑成队列一次识别；“清空队列”可重来。</div></details>'
   +'<details style="margin:6px 0;border:1px solid var(--border);border-radius:10px;padding:6px 10px"><summary style="cursor:pointer;font-weight:700">📜 申论复盘</summary><div style="padding:6px 0 2px">粘贴题干（建议带分值/字数要求）+ 给定材料，点“开始复盘”。<br>自动完成：审题拆解 → 材料找点 → 组织示范答案。<br>填上“我的作答”就变成批改模式：逐条评点、定档、给修改建议。<br>再填“参考答案”可校准答案要点；复盘完成后可“存入错题本”（申论模块）。<br>申论也支持拍照识图：拍题干/材料/作答/参考答案，自动识别填入。</div></details>'
   +'<details style="margin:6px 0;border:1px solid var(--border);border-radius:10px;padding:6px 10px"><summary style="cursor:pointer;font-weight:700">📚 题库管理</summary><div style="padding:6px 0 2px">顶部可搜索题目，按模块、题型、核对状态、掌握等级、自定义标签筛选；点考点标签可只看该考点。<br>点任意题目进详情：看答案、解析、备注、考点、原图；点图片可全屏放大（双指缩放）。<br>学考点：详情页点“📚 学考点”，AI 生成该考点的知识卡（定义/公式/方法/易错点/例题），刷题顺便补知识。<br>练变式：详情页点“🧩 练变式”，AI 基于这道错题生成 2 道同考点新题，举一反三验证真的会了。<br>解析不准：详情页备注区点“🔄 解析不准？重新生成”，AI 重写解析；图形推理会强制逐图讲规律。<br>问 AI：详情页点“💬 问 AI”，带着这道题跳到 AI 助手，可以多轮追问解题思路和速解技巧。<br>自定义标签：详情页可给题目加“必考 / 易混 / 蒙对的”等标签，支持按标签筛选。<br>语音备注：点 🎤 说话自动转文字；若设备没装语音识别服务，会自动提示改用输入法键盘上的麦克风说话（点输入框后键盘上一般有 🎤 图标）。<br>图形推理速查：图形推理题详情页自带“🧩 规律速查表”，做题时照着检查位置/样式/属性/数量/空间规律。<br>错题档案：详情页“📁 错题档案”查看历次复习评分、错因；错 3 次仍未掌握的题标记为顽固错题，考前速览优先收录。<br>常用操作：标记已核对、批量标记已核对、裁剪图片、重置复习进度、删除题目。<br>技巧讲解：详情页点“🧠 技巧讲解”，生成后自动缓存，再次查看秒出、不重复扣费。</div></details>'
   +'<details style="margin:6px 0;border:1px solid var(--border);border-radius:10px;padding:6px 10px"><summary style="cursor:pointer;font-weight:700">🔍 查重（去重小助手）</summary><div style="padding:6px 0 2px">位置：设置 → 数据管理 → 查重。自动扫描全部题目，跨模块按相似度智能找出疑似重复。<br>两种清理方式：① 每组里点“删除”逐条删；② 底部“每组保留第一条，删除其余”一键清理（需再点一次确认，防止误删）。<br>导入 JSON 时自动跳过重复题；保存新题后若与已有题疑似重复，会提示你去查重。<br>删除不可恢复，清理前建议先“备份到下载”。</div></details>'
@@ -1771,7 +1774,7 @@ function resetPhotoUI(){
   document.getElementById("cb-btn-analyze").style.display="none"; document.getElementById("cb-ai-results").style.display="none";
   var act=document.getElementById("cb-photo-actions"); if(act) act.style.display="none";
   var un=document.getElementById("cb-photo-undo"); if(un) un.style.display="none";
-  document.getElementById("cb-ai-loading").style.display="none"; aiR=[]; photoUrl=""; aiPhoto=""; photoOrig=""; aiPhotoCount=0; simplePending=[]; document.getElementById("cb-photo-inp").value=""; var sf=document.getElementById("cb-simple-form"); if(sf)sf.style.display="none";
+  document.getElementById("cb-ai-loading").style.display="none"; aiR=[]; photoUrl=""; aiPhoto=""; photoOrig=""; photoMarked=""; photoDeInked=false; aiPhotoCount=0; simplePending=[]; document.getElementById("cb-photo-inp").value=""; var sf=document.getElementById("cb-simple-form"); if(sf)sf.style.display="none";
   renderPhotoQueueHint();
 }
 function handlePhoto(e){
@@ -1780,7 +1783,7 @@ function handlePhoto(e){
     var fl=Array.prototype.slice.call(files);
     var fr0=new FileReader();
     fr0.onload=function(ev){
-      photoOrig=ev.target.result; photoUrl=photoOrig; photoCurrentNewest=false; document.getElementById("cb-photo-img").src=photoUrl;
+      photoOrig=ev.target.result; photoUrl=photoOrig; photoMarked=photoOrig; photoDeInked=false; photoCurrentNewest=false; document.getElementById("cb-photo-img").src=photoUrl;
       document.getElementById("cb-photo-up").style.display="none"; document.getElementById("cb-photo-pv").style.display="";
       document.getElementById("cb-btn-analyze").style.display=""; document.getElementById("cb-ai-results").style.display="none";
       var act=document.getElementById("cb-photo-actions"); if(act) act.style.display="flex";
@@ -1801,7 +1804,7 @@ function handlePhoto(e){
   var f=files[0];
   var fr=new FileReader(); fr.onload=function(ev){
     if(simpleMode()&&photoUrl)simplePending.push(photoUrl);
-    photoOrig=ev.target.result; photoUrl=photoOrig; photoCurrentNewest=true; document.getElementById("cb-photo-img").src=photoUrl;
+    photoOrig=ev.target.result; photoUrl=photoOrig; photoMarked=photoOrig; photoDeInked=false; photoCurrentNewest=true; document.getElementById("cb-photo-img").src=photoUrl;
     document.getElementById("cb-photo-up").style.display="none"; document.getElementById("cb-photo-pv").style.display="";
     document.getElementById("cb-btn-analyze").style.display=""; document.getElementById("cb-ai-results").style.display="none";
     var act=document.getElementById("cb-photo-actions"); if(act) act.style.display="flex";
@@ -1816,7 +1819,7 @@ function cropPhoto(){
   if(!photoUrl) return;
   var src=photoOrig||photoUrl;
   openCropImage(src,function(data){
-    photoUrl=data; aiPhoto=data;
+    photoUrl=data; aiPhoto=data; photoMarked=data; photoDeInked=false;
     var im=document.getElementById("cb-photo-img"); if(im) im.src=data;
     var un=document.getElementById("cb-photo-undo"); if(un) un.style.display="";
     toast("已裁剪，点“开始识别”即可识别框选区域");
@@ -1824,10 +1827,23 @@ function cropPhoto(){
 }
 function undoPhoto(){
   if(!photoOrig) return;
-  photoUrl=photoOrig; aiPhoto="";
+  photoUrl=photoOrig; photoMarked=photoOrig; photoDeInked=false; aiPhoto="";
   var im=document.getElementById("cb-photo-img"); if(im) im.src=photoOrig;
   var un=document.getElementById("cb-photo-undo"); if(un) un.style.display="none";
   toast("已恢复原图");
+}
+function markedImgOf(){var m=photoMarked||photoOrig;return (m&&photoUrl&&m!==photoUrl)?m:null}
+function markedImgVisible(){return localStorage.getItem("cb_show_marked")!=="0"}
+function toggleMarkedImg(){
+  var on=!markedImgVisible();
+  localStorage.setItem("cb_show_marked",on?"1":"0");
+  var els=document.querySelectorAll(".cb-marked-blk");
+  for(var i=0;i<els.length;i++)els[i].style.display=on?"":"none";
+  var btns=document.querySelectorAll(".cb-marked-btn");
+  for(var j=0;j<btns.length;j++)btns[j].textContent=on?"🙈 隐藏带笔迹原图":"👁 显示带笔迹原图";
+  var cbs=document.querySelectorAll(".cb-set-marked-cb");
+  for(var k=0;k<cbs.length;k++)cbs[k].checked=on;
+  toast(on?"已显示带笔迹原图":"已隐藏带笔迹原图，可随时再点显示");
 }
 var AI_CLEAN_RATIOS=[{k:"1:1",r:1},{k:"3:4",r:0.75},{k:"4:3",r:4/3},{k:"16:9",r:16/9},{k:"9:16",r:9/16},{k:"2:3",r:2/3},{k:"3:2",r:1.5},{k:"21:9",r:21/9}];
 async function aiCleanImage(src){
@@ -1893,8 +1909,9 @@ async function aiCleanInk(){
   var btn=document.getElementById("cb-photo-ai-clean"); if(btn){btn.disabled=true;btn.textContent="🧽 去除中…"}
   aiTaskStart();
   try{
+    if(!photoDeInked)photoMarked=photoUrl;
     var cleaned=await aiCleanImage(photoUrl);
-    photoUrl=cleaned; aiPhoto="";
+    photoUrl=cleaned; photoDeInked=true; aiPhoto="";
     var im=document.getElementById("cb-photo-img"); if(im) im.src=cleaned;
     var un=document.getElementById("cb-photo-undo"); if(un) un.style.display="";
     toast("笔迹已去除，可点开始识别或继续裁剪");
@@ -2500,8 +2517,9 @@ async function analyzePhoto(){
     var items=rhit||await runRecognition(processed);
     if(!rhit&&items&&items.length)recCachePut(rk,processed,items.map(function(x){return JSON.parse(JSON.stringify(x))}));
     for(var i=0;i<items.length;i++)items[i].img=(items[i].box&&items[i].box.x!=null)?await cropImageRegion(processed,items[i].box):(items.length===1?processed:null);
-    var __hasClean=(photoOrig&&photoUrl&&photoUrl!==photoOrig);
-    for(var i=0;i<items.length;i++){if(__hasClean){items[i].imgOrig=(items[i].box&&items[i].box.x!=null)?await cropImageRegion(photoOrig,items[i].box):(items.length===1?photoOrig:null)}else items[i].imgOrig=null}
+    var __mk=photoMarked||photoOrig;
+    var __hasClean=(__mk&&photoUrl&&photoUrl!==__mk);
+    for(var i=0;i<items.length;i++){if(__hasClean){items[i].imgOrig=(items[i].box&&items[i].box.x!=null)?await cropImageRegion(__mk,items[i].box):(items.length===1?__mk:null)}else items[i].imgOrig=null}
     aiR=items; aiPhotoCount=1;
     if(items&&items.length&&!rhit) vipMarkAiUsed();
     if(stopT){stopT();stopT=null}
@@ -3292,6 +3310,7 @@ function rset(){
   document.getElementById("cb-set-font").value=localStorage.getItem("cb_font")||"16";
   document.getElementById("cb-set-goal").value=localStorage.getItem("cb_goal")||"50";
   document.getElementById("cb-set-vision").value=localStorage.getItem("cb_vision_model")||"25";
+  var mkEl0=document.getElementById("cb-set-marked"); if(mkEl0)mkEl0.checked=markedImgVisible();
   document.getElementById("cb-set-batch").value=String(batchConc());
   document.getElementById("cb-set-exam-name").value=localStorage.getItem("cb_exam_name")||"";
   document.getElementById("cb-set-exam-date").value=localStorage.getItem("cb_exam_date")||"";
@@ -3309,6 +3328,7 @@ function saveSettings(){
   var newGoal=document.getElementById("cb-set-goal").value||"50";
   localStorage.setItem("cb_goal",newGoal);
   localStorage.setItem("cb_vision_model",document.getElementById("cb-set-vision").value);
+  var mkEl1=document.getElementById("cb-set-marked"); if(mkEl1)localStorage.setItem("cb_show_marked",mkEl1.checked?"1":"0");
   localStorage.setItem("cb_exam_name",(document.getElementById("cb-set-exam-name").value||"").trim());
   localStorage.setItem("cb_exam_date",document.getElementById("cb-set-exam-date").value||"");
   sbPersistFields();
@@ -4176,6 +4196,7 @@ function bindEvents(){
   el=document.getElementById("cb-fb-mail"); if(el) el.addEventListener("click",sendFeedbackMail);
   el=document.getElementById("cb-set-dark"); if(el) el.addEventListener("change",function(){localStorage.setItem("cb_dark",this.checked?"1":"0");applyAppearance()});
   el=document.getElementById("cb-set-font"); if(el) el.addEventListener("change",function(){localStorage.setItem("cb_font",this.value);applyAppearance()});
+  el=document.getElementById("cb-set-marked"); if(el) el.addEventListener("change",function(){localStorage.setItem("cb_show_marked",this.checked?"1":"0");toast(this.checked?"已显示带笔迹原图":"已隐藏带笔迹原图")});
   el=document.getElementById("cb-btn-export"); if(el) el.addEventListener("click",exportJSON);
   el=document.getElementById("cb-btn-import"); if(el) el.addEventListener("click",function(){document.getElementById("cb-import-file").click()});
   el=document.getElementById("cb-import-file"); if(el) el.addEventListener("change",function(e){if(e.target.files[0])importJSON(e.target.files[0])});
