@@ -255,6 +255,21 @@ body.dark .cb-plan{background:linear-gradient(135deg,#3a242b,#7a4258 60%,#55312a
 body.dark .cb-tab-btn.active,body.dark .cb-chip.active,body.dark .cb-btn.pri{background:linear-gradient(135deg,#eaa2b4,#d67f97)}
 body.dark #cb-topbar{background:linear-gradient(120deg,#3a242b,#6e3a4d 60%,#55312a)}
 @media (min-width:768px){body{padding-top:70px}#cb-topbar{max-width:760px;border-radius:0 0 18px 18px}#cb-nav{width:min(740px, calc(100% - 20px))}}
+/* ===== 解析重点上色 ===== */
+.ana-b,.ana-k,.ana-r,.ana-g{font-weight:700}
+.ana-b{color:#2f6fb0}
+.ana-k{color:#b0722a}
+.ana-r{color:#c0392b}
+.ana-g{color:#2f855a}
+.ana-box-k{background:rgba(217,160,102,.18);border-radius:5px}
+.ana-box-r{background:rgba(225,29,72,.09);border-radius:5px}
+body.dark .ana-b{color:#8ab4f8}
+body.dark .ana-k{color:#e8b982}
+body.dark .ana-r{color:#ff8fa3}
+body.dark .ana-g{color:#7dd3a0}
+body.dark .ana-box-k{background:rgba(232,185,130,.16)}
+body.dark .ana-box-r{background:rgba(255,143,163,.14)}
+
 </style>
 
 <meta name="apple-mobile-web-app-title" content="考岸错题本">
@@ -826,7 +841,7 @@ function normKeywords(mod,arr){
 }
 var examQs=[], examAns={}, examTimer=null, examSec=0;
 var kwFilter="";
-var APP_VERSION_CODE=124; var APP_VERSION_NAME="1.10.66";
+var APP_VERSION_CODE=125; var APP_VERSION_NAME="1.10.67";
 
 // ===== VIEW SWITCH =====
 function sv(v){
@@ -946,7 +961,7 @@ function renderRQ(){
   var tipBtn=document.getElementById("cb-btn-review-tip"); if(tipBtn){tipBtn.style.display="none";tipBtn.textContent="📖 看讲解"}
   var tipBox=document.getElementById("cb-review-tip"); if(tipBox){tipBox.style.display="none";tipBox.textContent=""}
   document.getElementById("cb-review-fix").style.display="none"; document.getElementById("cb-review-fix-a").value=q.a||"";
-  document.getElementById("cb-review-n").style.display="none"; if(q.notes) document.getElementById("cb-review-n").innerHTML=q.notes.replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  document.getElementById("cb-review-n").style.display="none"; if(q.notes) document.getElementById("cb-review-n").innerHTML=anaRich(q.notes);
   document.getElementById("cb-review-rating").style.display="none";
   document.getElementById("cb-review-done").style.display="none";
   document.getElementById("cb-review-card").style.display="";
@@ -983,12 +998,12 @@ function showReviewTip(){
   var box=document.getElementById("cb-review-tip"),btn=document.getElementById("cb-btn-review-tip");
   if(!box)return;
   if(box.style.display!=="none"){box.style.display="none";if(btn)btn.textContent="📖 看讲解";return}
-  var q=rq[ri],parts=[];
-  if(q.notes)parts.push("📝 解析：\n"+q.notes);
+  var q=rq[ri],parts=[],__tipH="";
+  if(q.notes){__tipH+='<div><b class="ana-b">📝 解析</b></div><div>'+anaRich(q.notes)+'</div>'}
   var c=tipCacheGet(q.id);
-  if(c)parts.push("🧠 技巧讲解：\n"+c);
-  else parts.push("🧠 详细技巧讲解可在错题详情页点「技巧讲解」生成");
-  box.textContent=parts.join("\n\n");
+  if(c){__tipH+='<div style="margin-top:8px"><b class="ana-b">🧠 技巧讲解</b></div><div>'+anaRich(c)+'</div>'}
+  else __tipH+='<div style="margin-top:8px;color:var(--text2)">🧠 详细技巧讲解可在错题详情页点「技巧讲解」生成</div>';
+  box.innerHTML=__tipH;
   box.style.display="";
   if(btn)btn.textContent="📖 收起讲解";
 }
@@ -1256,7 +1271,7 @@ function showDetail(id){
     document.getElementById("cb-modal-q").innerHTML=(q.img?'<img src="'+q.img+'" onclick="openImgView(this.src)" style="max-width:100%;max-height:260px;object-fit:contain;border-radius:8px;margin-bottom:8px;cursor:zoom-in">':'')+String(q.q||"").replace(/</g,"&lt;").replace(/>/g,"&gt;");
     if(q.imgOrig){var mv2=markedImgVisible();document.getElementById("cb-modal-q").innerHTML+='<div style="display:flex;align-items:center;gap:8px;margin:2px 0 6px"><span style="font-size:0.68rem;color:var(--text2)">🖼 带笔迹原图（裁剪后未去笔迹）</span><button class="cb-btn ghost cb-marked-btn" onclick="toggleMarkedImg()" style="font-size:0.68rem;padding:3px 9px">'+(mv2?"🙈 隐藏":"👁 显示")+'</button></div><div class="cb-marked-blk"'+(mv2?"":' style="display:none"')+'><img src="'+q.imgOrig+'" onclick="openImgView(this.src)" style="max-width:100%;max-height:220px;object-fit:contain;border-radius:8px;margin-bottom:8px;cursor:zoom-in;border:1px solid var(--border)"></div>'}
     document.getElementById("cb-modal-a").textContent=q.a||"";
-    if(q.notes){document.getElementById("cb-modal-notes-wrap").style.display="";document.getElementById("cb-modal-notes").textContent=q.notes}else{document.getElementById("cb-modal-notes-wrap").style.display="none"}
+    if(q.notes){document.getElementById("cb-modal-notes-wrap").style.display="";document.getElementById("cb-modal-notes").innerHTML=anaRich(q.notes)}else{document.getElementById("cb-modal-notes-wrap").style.display="none"}
     document.getElementById("cb-modal-meta").innerHTML='<span>题型：'+(q.qtype||"")+'</span><span>答题形式：'+(q.qfmt||"")+'</span><span>核对：'+(q.verify||"")+'</span><span>难度：'+["","⭐","⭐⭐","⭐⭐⭐"][q.diff||1]+'</span><span>错因：'+(q.cause||"")+'</span><span>复习：'+q.rep+'次</span><span>等级：L'+(q.lv||0)+'</span><span>下次：'+fd(q.nr)+'</span>';
     renderDetailTags(q); renderDetailArchive(q);
     var ni=document.getElementById("cb-modal-note-inp"); if(ni)ni.value=q.notes||"";
@@ -1349,21 +1364,21 @@ function showTip(){
   if(!wrap||!out||!btn) return;
   dbGet(detailId,function(e,q){ if(e||!q) return;
     var c=tipCacheGet(detailId);
-    if(c){wrap.style.display="";out.textContent=c;return}
+    if(c){wrap.style.display="";out.innerHTML=anaRich(c);return}
     var ac=aiAnalysisCred();
     var r={module:q.mod||"",questionType:q.qtype||"",question:q.q||"",answer:q.a||""};
-    wrap.style.display=""; out.textContent="正在生成技巧讲解…";
+    wrap.style.display=""; out.innerHTML='<span style="color:var(--text2)">正在生成技巧讲解…</span>';
     var tipStop=waitTicker(out,"正在生成技巧讲解");
     tipBusy=true; btn.disabled=true; btn.textContent="⏳ 讲解中…";
     callTextAI(ac.api,ac.key,ac.model,buildAnalysisPrompt(r)+"\n\n要求：这是错题详情里的技巧讲解，重点讲清这道题用到的解题方法与速算/速解技巧，并给出错因与同类拓展。"+(q.mod==="判断推理"&&String(q.qtype||"").indexOf("图形")>=0?"\n\n【图形推理铁律】图形推理题必须逐图精确描述并推理：\n1. 每个图形（题干第1图/第2图/…/选项A-D）都要写清：形状、边数（数出具体几条边并注明，如“4条边→四边形”）、角数、封闭区域数（逐个标出面①面②…并给出总数）、元素种类与个数、位置、方向、颜色。\n2. 对称性必须验证后判断：明确写“沿竖轴/横轴/斜轴对折可重合→轴对称”或“无对称轴”，禁止凭视觉猜测；不对称就写“不对称”。\n3. 三角形必须数出恰好3条边，四边形4条边，禁止混淆。\n4. 看不清或不确定时写“此处模糊，无法判断”，禁止脑补。\n5. 按规律体系（位置→样式→属性→数量→空间）逐项排查，明确说出规律与排除过程，禁止“观察图形找规律”这类笼统表述。":""),q.img||null)
     .then(function(data){
       var msg=data.choices&&data.choices[0]?data.choices[0].message:null;
       var ct=msg?(msg.content||msg.reasoning_content||""):"";
-      out.textContent=ct||"（模型未返回内容，请重试）";
+      out.innerHTML=anaRich(ct||"（模型未返回内容，请重试）");
       if(ct)tipCachePut(detailId,ct);
     })
     .catch(function(err){
-      out.textContent="生成失败："+String(err&&err.message||err||"未知错误");
+      out.innerHTML=anaRich("生成失败："+String(err&&err.message||err||"未知错误"));
     })
     .finally(function(){ tipBusy=false; if(tipStop)tipStop(); btn.disabled=false; btn.textContent="🧠 技巧讲解"; });
   });
@@ -1439,7 +1454,7 @@ function regenAnalysis(){
       q.notes=ct;q.ut=new Date().toISOString();
       dbPut(q,function(e2){
         if(e2){toast("保存失败");return}
-        var nEl=document.getElementById("cb-modal-notes");if(nEl)nEl.textContent=ct;
+        var nEl=document.getElementById("cb-modal-notes");if(nEl)nEl.innerHTML=anaRich(ct);
         toast("已重新生成解析");
         try{var n=parseInt(localStorage.getItem("cb_regen_count")||"0")+1;localStorage.setItem("cb_regen_count",String(n))}catch(e3){}
         vipMarkAiUsed();
@@ -1630,6 +1645,7 @@ function warnDupAfterSave(saved){
   },1200);
 }
 var CHANGELOG=[
+{v:"1.10.67",t:"解析重点上色：技巧、考点、注意、易错、结论等要点自动用不同颜色标出，关键步骤一眼看清"},
 {v:"1.10.66",t:"新增 PDF 整卷导入：发一份试卷 PDF 进来，按页自动识别并录入错题，一份卷子一次录完；同时优化导入过程的进度显示与失败提示"},
 {v:"1.10.64",t:"修复简洁录入偶发“提示已保存、题库里却没有”的问题：图片过大或手机空间不足时会明确提示并可直接重试，保存前也会自动压缩图片"},
 {v:"1.10.63",t:"去笔迹的对照图更实用：保留的是「裁剪后、还没去笔迹」的那张（和错题区域一致，不再是整张照片），详情页/复习页可一键隐藏，设置里也能长期关闭"},
@@ -2273,7 +2289,7 @@ function hs13ForModule(mod){
 function buildAnalysisPrompt(r){
   var vd=r.visualDescription?('\n图形/图表描述：'+r.visualDescription):'';
   var base=(r.module==="申论")?SHENLUN_PROMPT:hs13ForModule(r.module||"");
-  return base+'\n\n【题目信息】\n模块：'+r.module+'\n题型：'+r.questionType+'\n题干：'+(r.question||"（图形题，见原图）")+vd+'\n选项答案：'+(r.answer||"未提供")+'\n\n请严格按输出格式生成这道题的解析。\n\n【输出规范·必须遵守】\n1. 全程用自然中文，数学只用 + − × ÷ = % 和小数点，分数写“几分之几”。\n2. 严禁编程符号：**、*、//、==、=>、->、Math.、代码块、变量名、对象。\n3. 强调用“重点：”“注意：”或引号，禁止 Markdown 标记（#、* 列表、** 加粗）。';
+  return base+'\n\n【题目信息】\n模块：'+r.module+'\n题型：'+r.questionType+'\n题干：'+(r.question||"（图形题，见原图）")+vd+'\n选项答案：'+(r.answer||"未提供")+'\n\n请严格按输出格式生成这道题的解析。\n\n【输出规范·必须遵守】\n1. 全程用自然中文，数学只用 + − × ÷ = % 和小数点，分数写“几分之几”。\n2. 严禁编程符号：**、*、//、==、=>、->、Math.、代码块、变量名、对象。\n3. 关键内容用「重点：」「注意：」「易错：」「结论：」等标签开头、单独成行，便于一眼抓住要点；禁止 Markdown 标记（#、* 列表、** 加粗）。';
 }
 async function aiCallRaw(endpoint,ak,bodyObj,timeoutMs){
   if(window.Android&&window.Android.aiRequest) return nativeAI(endpoint,ak,bodyObj,timeoutMs);
@@ -2353,14 +2369,14 @@ function aiNotes(r){var a=(r&&r.analysis)||"";return isPendingAnalysis(a)?"":a}
 function updateAICardAnalysis(i){
   var r=aiR[i]; if(!r) return;
   var box=document.getElementById("cb-ai-ana-"+i);
-  if(box){box.style.display=r.analysis?"block":"none";box.innerHTML="解析："+esc(r.analysis)}
+  if(box){box.style.display=r.analysis?"block":"none";box.innerHTML="解析："+anaRich(r.analysis)}
   var rb=document.getElementById("cb-ai-retry-"+i);
   if(rb) rb.style.display=(!r.analysis||r.analysis.indexOf("⚠️")===0)?"":"none";
 }
 function updateTextAICardAnalysis(i){
   var r=aiR[i]; if(!r) return;
   var box=document.getElementById("cb-t-ana-"+i);
-  if(box){box.style.display=r.analysis?"block":"none";box.innerHTML="解析："+esc(r.analysis)}
+  if(box){box.style.display=r.analysis?"block":"none";box.innerHTML="解析："+anaRich(r.analysis)}
   var rb=document.getElementById("cb-t-retry-"+i);
   if(rb) rb.style.display=(!r.analysis||r.analysis.indexOf("⚠️")===0)?"":"none";
 }
@@ -2418,7 +2434,7 @@ function renderTextAI(){
     var cause=CAUSES.indexOf(r.errorCause)>=0?r.errorCause:"其他";
     h+='<div class="cb-ai-card"><div class="cb-ai-head"><span class="cb-mod '+modCls(m)+'">'+m+'</span><span style="font-size:0.7rem;'+(r.answer?'color:#38a169':'color:#dd6b20')+'">'+(r.answer?'答案已填':'答案待核对')+'</span><button onclick="toggleTEdit('+i+')" style="background:none;border:none;cursor:pointer;font-size:0.8rem;color:var(--pri)">✏️ 编辑</button><button onclick="removeT('+i+')" style="background:none;border:none;cursor:pointer;font-size:0.8rem;color:#a0aec0">✕</button></div><div style="font-size:0.82rem;line-height:1.6;margin-bottom:6px;white-space:pre-wrap">'+(r.question||"").replace(/</g,"&lt;")+'</div>';
     if(r.answer) h+='<div style="font-size:0.78rem;color:#2f855a;margin-bottom:6px;white-space:pre-wrap">答案：'+(r.answer||"").replace(/</g,"&lt;")+'</div>';
-    h+='<div id="cb-t-ana-'+i+'" style="font-size:0.76rem;color:#718096;margin-bottom:6px;white-space:pre-wrap;display:'+(r.analysis?"block":"none")+'">解析：'+esc(r.analysis)+'</div>';
+    h+='<div id="cb-t-ana-'+i+'" style="font-size:0.76rem;color:#718096;margin-bottom:6px;white-space:pre-wrap;display:'+(r.analysis?"block":"none")+'">解析：'+anaRich(r.analysis)+'</div>';
     if(r.keywords&&r.keywords.length) h+='<div style="font-size:0.72rem;margin-bottom:6px">'+r.keywords.map(function(k){return '<span style="display:inline-block;background:rgba(184,134,11,0.12);color:#8a6d1a;border-radius:10px;padding:1px 8px;margin:0 4px 4px 0">'+k+'</span>'}).join("")+'</div>';
     h+='<div style="font-size:0.76rem;color:#8a6d1a;background:rgba(184,134,11,0.1);border-radius:6px;padding:4px 8px;margin-bottom:6px">🔍 错因：'+cause+'</div>';
     h+='<button id="cb-t-retry-'+i+'" onclick="retryAnalysis('+i+')" class="cb-btn ghost" style="font-size:0.72rem;padding:3px 10px;margin-bottom:6px;display:'+((!r.analysis||r.analysis.indexOf("⚠️")===0)?"":"none")+'">🔄 重试解析</button>';
@@ -2941,7 +2957,7 @@ function renderAI(){
     if(r.img) h+='<img src="'+r.img+'" style="width:100%;max-height:160px;object-fit:contain;border:1px solid var(--border);border-radius:8px;margin-bottom:6px">';
     h+='<div style="font-size:0.82rem;line-height:1.6;margin-bottom:6px;white-space:pre-wrap">'+(r.question||"").replace(/</g,"&lt;")+'</div>';
     if(r.answer) h+='<div style="font-size:0.78rem;color:#2f855a;margin-bottom:6px;white-space:pre-wrap">答案：'+(r.answer||"").replace(/</g,"&lt;")+'</div>';
-    h+='<div id="cb-ai-ana-'+i+'" style="font-size:0.76rem;color:#718096;margin-bottom:6px;white-space:pre-wrap;display:'+(r.analysis?"block":"none")+'">解析：'+esc(r.analysis)+'</div>';
+    h+='<div id="cb-ai-ana-'+i+'" style="font-size:0.76rem;color:#718096;margin-bottom:6px;white-space:pre-wrap;display:'+(r.analysis?"block":"none")+'">解析：'+anaRich(r.analysis)+'</div>';
     if(r.visualDescription) h+='<div style="font-size:0.76rem;color:#4a5568;background:#edf2f7;padding:6px 8px;border-radius:6px;margin-bottom:6px;white-space:pre-wrap">图形/图表：'+(r.visualDescription||"").replace(/</g,"&lt;")+'</div>';
     if(r.keywords&&r.keywords.length) h+='<div style="font-size:0.72rem;margin-bottom:6px">'+r.keywords.map(function(k){return '<span style="display:inline-block;background:rgba(184,134,11,0.12);color:#8a6d1a;border-radius:10px;padding:1px 8px;margin:0 4px 4px 0">'+k+'</span>'}).join("")+'</div>';
     h+='<div style="font-size:0.76rem;color:#8a6d1a;background:rgba(184,134,11,0.1);border-radius:6px;padding:4px 8px;margin-bottom:6px">🔍 错因：'+cause+'</div>';
@@ -2985,6 +3001,39 @@ async function retryAnalysis(i){
 }
 function esc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}
 function escAttr(s){return esc(s).replace(/"/g,"&quot;").replace(/'/g,"&#39;")}
+// ===== 解析重点上色：识别行首的「重点：」「注意：」等标签并上色（只染色，不改 AI 输出结构） =====
+var ANA_COLOR={};
+(function(){
+  var k=["重点","结论","核心","速解","秒杀","技巧","关键","易混","口诀"];
+  var r=["注意","易错","陷阱","误区","坑点","别忘","警惕","小心"];
+  var g=["答案","正确选项","故选","结果"];
+  var b=["考点","思路","步骤","方法","解析","公式","定位","为什么","依据"];
+  var i;
+  for(i=0;i<k.length;i++)ANA_COLOR[k[i]]="ana-k";
+  for(i=0;i<r.length;i++)ANA_COLOR[r[i]]="ana-r";
+  for(i=0;i<g.length;i++)ANA_COLOR[g[i]]="ana-g";
+  for(i=0;i<b.length;i++)ANA_COLOR[b[i]]="ana-b";
+})();
+var ANA_LEAD=/^([ \u3000]*(?:\d{1,2}[.、)）]|[-•·—])?[ \u3000]*)(?:【([^】]{1,8})】|([\u4e00-\u9fa5A-Za-z]{2,6})[：:，,])/;
+function anaLine(escaped){
+  var s=String(escaped==null?"":escaped);
+  var parts=s.split("\n");
+  for(var i=0;i<parts.length;i++){
+    var m=parts[i].match(ANA_LEAD);
+    if(!m) continue;
+    var w=m[2]||m[3]||"";
+    var cls=ANA_COLOR[w];
+    if(!cls) continue;
+    var bullet=m[1],head=m[0].slice(bullet.length);
+    var open=cls==="ana-r"?'<span class="ana-box-r">':(cls==="ana-k"?'<span class="ana-box-k">':"");
+    var close=open?"</span>":"";
+    parts[i]=open+bullet+'<b class="'+cls+'">'+head+'</b>'+parts[i].slice(m[0].length)+close;
+  }
+  return parts.join("\n");
+}
+function anaRich(s){
+  return anaLine(esc(s)).replace(/\*\*(.+?)\*\*/g,'<b class="ana-k">$1</b>');
+}
 function toggleAIEdit(i){
   var el=document.getElementById("cb-ai-edit-"+i); if(!el) return;
   var show=el.style.display==="none"||el.style.display==="";
@@ -4065,7 +4114,7 @@ function aiChatAdd(role,text){
   box.appendChild(d); box.scrollTop=box.scrollHeight;
   return d;
 }
-function mdRich(escaped){return String(escaped).replace(/\*\*(.+?)\*\*/g,"<b>$1</b>")}
+function mdRich(escaped){return anaLine(String(escaped)).replace(/\*\*(.+?)\*\*/g,'<b class="ana-k">$1</b>')}
 function aiChatRenderHist(){
   var box=document.getElementById("cb-ai-chat"); if(!box)return;
   if(!aiChatHist.length)return;
@@ -4123,7 +4172,7 @@ function aiAsk(text){
       var brief=await aiChatBrief();
       var exN=localStorage.getItem("cb_exam_name")||"",exD=localStorage.getItem("cb_exam_date")||"",exInfo="";
       if(exD){var days=Math.ceil((new Date(exD+"T23:59:59")-new Date())/86400000);var stg=days>90?"基础阶段":days>30?"专项强化":days>7?"套题冲刺":"考前冲刺";exInfo="；用户目标考试："+(exN||"未命名")+"，剩余 "+Math.max(0,days)+" 天（"+stg+"），制定计划时按该阶段安排复习重点"}
-      var sys="你是「考岸错题本」的内置公考 AI 助手，帮助用户备考公务员考试（国考/省考/联考）。回答要专业、具体、可操作：资料分析与数量关系讲速算/速解方法，判断推理讲规律体系与观察法，言语理解讲语境与逻辑，常识判断讲记忆方法，申论讲审题、找点、结构与批改要点。结合用户错题本数据给出针对性建议；用户问具体错题时，建议他用「录入→拍照识别」把题加进来再深入分析。用中文回答，条理清晰，不用空话。"+brief+exInfo+"\n\n【输出规范·必须遵守】全程中文自然语言，数学只用 + − × ÷ = % 和小数点，分数写“几分之几”；严禁 Markdown 符号（**、*、#、- 列表）和代码/编程写法；强调用“重点：”“注意：”或引号。";
+      var sys="你是「考岸错题本」的内置公考 AI 助手，帮助用户备考公务员考试（国考/省考/联考）。回答要专业、具体、可操作：资料分析与数量关系讲速算/速解方法，判断推理讲规律体系与观察法，言语理解讲语境与逻辑，常识判断讲记忆方法，申论讲审题、找点、结构与批改要点。结合用户错题本数据给出针对性建议；用户问具体错题时，建议他用「录入→拍照识别」把题加进来再深入分析。用中文回答，条理清晰，不用空话。"+brief+exInfo+"\n\n【输出规范·必须遵守】全程中文自然语言，数学只用 + − × ÷ = % 和小数点，分数写“几分之几”；严禁 Markdown 符号（**、*、#、- 列表）和代码/编程写法；关键内容用「重点：」「注意：」「结论：」等标签开头、单独成行。";
       var msgs=[{role:"system",content:sys}].concat(aiChatHist.slice(-12));
       var cred=aiTextCred();
       var body={model:cred.model,messages:msgs,max_tokens:4096,temperature:0.3};
