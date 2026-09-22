@@ -841,7 +841,7 @@ function normKeywords(mod,arr){
 }
 var examQs=[], examAns={}, examTimer=null, examSec=0;
 var kwFilter="";
-var APP_VERSION_CODE=130; var APP_VERSION_NAME="1.10.72";
+var APP_VERSION_CODE=131; var APP_VERSION_NAME="1.10.73";
 
 // ===== VIEW SWITCH =====
 function sv(v){
@@ -1645,6 +1645,7 @@ function warnDupAfterSave(saved){
   },1200);
 }
 var CHANGELOG=[
+{v:"1.10.73",t:"修复图形推理跨页拆题：题干在上一页、图形在下一页时，自动把下一页顶部的图形并回原题，不再多出一道没有题干的空题"},
 {v:"1.10.72",t:"PDF 导入提速：整页识别改成单次长等待，不再同一页重复发两个请求白等，资料分析大表格页明显省时"},
 {v:"1.10.71",t:"PDF 导入识别更完整：一页多题会逐题全部识别，失败的页会自动多轮重试，并在结果里列出没识别成功的页码，方便补录"},
 {v:"1.10.70",t:"图表配图可云同步：图形推理的图形、资料分析的表格图表会跟着同步到平板和电脑，换设备也能看图做题"},
@@ -2487,7 +2488,7 @@ async function runRecognition(processed,pdfMode){
   var cred=aiVisionCred();
   var provider=cred.provider, ak=cred.key, model=cred.model;
   var endpoint=DEV_AI_ENDPOINT;
-  var prompt=PHOTO_REC_PROMPT+'\n\n【题目位置框 box】数组每一项必须额外返回 box：题目在图片中的位置框（x,y,w,h，相对坐标取值0-1000，左上角为原点），必须框住题干和全部选项；图形题/表格题尽量精确，多题照片每题的框不能重叠覆盖其它题目；无法定位时返回 null。\n\n【图表位置框 figureBox】如果题目带图形或表格，每一项再加两个字段：figureBox 是图形/表格/材料在图片中的位置框（x,y,w,h，相对坐标取值0-1000）；图形题框住题干中的图形区域，资料分析题框住本题依赖的共享表格或图表（同一页多道小题可以返回同一个框），没有图形和表格时返回 null。figureType 填「图形」「表格」「材料图表」三者之一，没有则填 null。\n\n【图形推理铁律】图形推理题必须逐图精确描述并推理，写进 visualDescription：\n1. 题干每个图形和选项A-D都要写清：形状、边数（数出具体几条边并注明，如“4条边→四边形”）、角数、封闭区域数（逐个标出面①面②…并给出总数）、元素种类与个数、位置、方向、颜色。\n2. 对称性必须验证后判断：明确写“沿竖轴/横轴/斜轴对折可重合→轴对称”或“无对称轴”，禁止凭视觉猜测；不对称就写“不对称”。\n3. 三角形必须数出恰好3条边，四边形4条边，禁止混淆。\n4. 看不清或不确定时写“此处模糊，无法判断”，禁止脑补。\n5. 按规律体系（位置→样式→属性→数量→空间）逐项排查，明确说出规律与排除过程，禁止“观察图形找规律”这类笼统表述。\n\n【长图提示】如果图片是拼接后的试卷长图，可能含多道题或一道跨页长题：按正常顺序逐题完整转录，跨拼接缝的题目合并为一道完整题目，禁止把拼接缝当成题目边界；看不清的文字明确标“□”。\n\n【考点库】\n'+kwLibText();
+  var prompt=PHOTO_REC_PROMPT+'\n\n【题目位置框 box】数组每一项必须额外返回 box：题目在图片中的位置框（x,y,w,h，相对坐标取值0-1000，左上角为原点），必须框住题干和全部选项；图形题/表格题尽量精确，多题照片每题的框不能重叠覆盖其它题目；无法定位时返回 null。\n\n【图表位置框 figureBox】如果题目带图形或表格，每一项再加两个字段：figureBox 是图形/表格/材料在图片中的位置框（x,y,w,h，相对坐标取值0-1000）；图形题框住题干中的图形区域，资料分析题框住本题依赖的共享表格或图表（同一页多道小题可以返回同一个框），没有图形和表格时返回 null。figureType 填「图形」「表格」「材料图表」三者之一，没有则填 null。\n\n【分页续题】页面顶部可能出现没有题号的图形、表格或选项，它们属于上一页最后一道题。这种情况要单独返回一项：question 以「（接上页）」开头，把顶部内容照原样转录，figureBox 框住这块图形或表格；严禁把它并到本页第一道题里，也不要漏掉。\n\n【图形推理铁律】图形推理题必须逐图精确描述并推理，写进 visualDescription：\n1. 题干每个图形和选项A-D都要写清：形状、边数（数出具体几条边并注明，如“4条边→四边形”）、角数、封闭区域数（逐个标出面①面②…并给出总数）、元素种类与个数、位置、方向、颜色。\n2. 对称性必须验证后判断：明确写“沿竖轴/横轴/斜轴对折可重合→轴对称”或“无对称轴”，禁止凭视觉猜测；不对称就写“不对称”。\n3. 三角形必须数出恰好3条边，四边形4条边，禁止混淆。\n4. 看不清或不确定时写“此处模糊，无法判断”，禁止脑补。\n5. 按规律体系（位置→样式→属性→数量→空间）逐项排查，明确说出规律与排除过程，禁止“观察图形找规律”这类笼统表述。\n\n【长图提示】如果图片是拼接后的试卷长图，可能含多道题或一道跨页长题：按正常顺序逐题完整转录，跨拼接缝的题目合并为一道完整题目，禁止把拼接缝当成题目边界；看不清的文字明确标“□”。\n\n【考点库】\n'+kwLibText();
   var maxTok;
   if(provider==="glm"){maxTok=model==="glm-4v"||model==="glm-4v-plus"?2048:12000}
   else{maxTok=await guessRecMaxTok(processed)}
@@ -2646,6 +2647,35 @@ function pdfImportReset(){
   var lo=document.getElementById("cb-ai-loading"); if(lo) lo.style.display="none";
   var lp=document.querySelector("#cb-ai-loading p"); if(lp) lp.textContent="AI 正在识别错题...";
   try{if(window.Android&&window.Android.closePdf)window.Android.closePdf()}catch(e){}
+}
+function isPageFragment(x,prev){
+  if(!prev||!x) return false;
+  var q=String(x.question||"").trim();
+  if(/^[\s（(]*\d{1,3}\s*[.、)）]/.test(q)) return false;
+  if(/第\s*\d+\s*题/.test(q.slice(0,8))) return false;
+  if(/^[（(]\s*接上页/.test(q)) return true;
+  if(/^[（(]\s*图形题/.test(q)) return true;
+  if(/^[（(]\s*原图/.test(q)) return true;
+  if(/^[A-D][.、]/.test(q)) return true;
+  if(q.length<=12&&(x.fig||x.figureBox)) return true;
+  return false;
+}
+function mergePageFragments(){
+  if(!aiR||aiR.length<2) return 0;
+  var n=0;
+  for(var i=1;i<aiR.length;i++){
+    var x=aiR[i],p=aiR[i-1];
+    if(x.__drop) continue;
+    if(isPageFragment(x,p)){
+      if(!p.fig&&x.fig) p.fig=x.fig;
+      if(!p.img&&x.img) p.img=x.img;
+      var extra=String(x.question||"").replace(/^[（(]\s*接上页\s*[）)]/,"").trim();
+      if(extra&&String(p.question||"").indexOf(extra)<0) p.question=String(p.question||"")+"\n"+extra;
+      x.__drop=true; n++;
+    }
+  }
+  if(n) aiR=aiR.filter(function(y){return !y.__drop});
+  return n;
 }
 function pdfNotify(txt){try{if(window.Android&&window.Android.startAiTask)window.Android.startAiTask(txt)}catch(e){}}
 function pdfRenderPage(idx,width){
@@ -2870,6 +2900,7 @@ async function runBatchCore(urls,lp,opt){
     var fl=document.getElementById("cb-ai-list");
     if(fl)fl.insertAdjacentHTML("beforeend",'<div style="margin-top:8px;font-size:0.75rem;color:#dd6b20;background:rgba(221,107,32,0.08);border:1px dashed #ed8936;border-radius:8px;padding:8px">⚠️ 以下图片识别失败（图片模糊、光线差或服务波动）：<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px">'+failedIdx.map(function(fi){return '<div style="text-align:center;width:88px"><img src="'+urls[fi]+'" style="width:88px;height:88px;object-fit:cover;border-radius:6px;border:1px solid var(--border)"><div style="font-size:0.62rem;color:var(--text2);margin-top:2px">第 '+(fi+1)+' 张</div></div>'}).join("")+'</div><p style="margin:6px 0 0">对照缩略图找到原图后，重新拍/选该张单独重试即可</p></div>');
   }
+  if(__pdf){var __mn=mergePageFragments(); if(__mn) toast("已把跨页的图形/选项并回上一题（"+__mn+" 处）",3000);}
   if(aiR.length) await genAnalysis();
   return {ok:okCount,fail:failCount,total:urls.length,failedIdx:failedIdx.slice(),items:aiR.length};
 }
