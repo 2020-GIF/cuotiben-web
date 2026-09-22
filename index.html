@@ -563,6 +563,8 @@ function setPhotoMode(m){
   setBtn(document.getElementById("cb-mode-simple"),m==="simple");
   var clean=document.getElementById("cb-simple-clean");
   if(clean)clean.style.display=simpleMode()?"flex":"none";
+  var pdfTile=document.getElementById("cb-photo-pdf");
+  if(pdfTile)pdfTile.style.display=(simpleMode()||!pdfBridgeReady())?"none":"";
   var desc=document.getElementById("cb-photo-mode-desc");
   if(desc)desc.textContent=m==="simple"?"📥 简洁录入：跳过 AI 识别，去手写后直接填信息保存图片，不调用 AI、不扣额度":(m==="20"?"⚡ 快速识别：识别更快更省时，复杂密卷识别稍弱，同样自动生成解析":"✨ 精细识别：AI 完整识别题干/选项并自动生成解析，准确度最高（推荐）");
   if(!simpleMode())closeSimpleForm();
@@ -2605,6 +2607,7 @@ var pdfImportState=null,pdfImportBusy=false;
 function pdfBridgeReady(){try{return !!(window.Android&&window.Android.pickPdf)}catch(e){return false}}
 function importPdf(){
   if(pdfImportBusy){toast("正在导入，请稍候…");return}
+  if(simpleMode()){toast("简洁录入不调用 AI：请先切到「精细识别」或「快速识别」再导入 PDF",3600);return}
   if(!pdfBridgeReady()){toast("PDF 导入需要在 App 内使用（当前环境不支持）",3200);return}
   if(!vipAiGate("AI 拍照识别"))return;
   try{window.Android.pickPdf();toast("请选择要导入的 PDF 试卷…",2500)}catch(e){toast("无法打开文件选择器："+String(e&&e.message||e),3200)}
