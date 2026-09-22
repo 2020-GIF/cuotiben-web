@@ -841,7 +841,7 @@ function normKeywords(mod,arr){
 }
 var examQs=[], examAns={}, examTimer=null, examSec=0;
 var kwFilter="";
-var APP_VERSION_CODE=129; var APP_VERSION_NAME="1.10.71";
+var APP_VERSION_CODE=130; var APP_VERSION_NAME="1.10.72";
 
 // ===== VIEW SWITCH =====
 function sv(v){
@@ -1645,6 +1645,7 @@ function warnDupAfterSave(saved){
   },1200);
 }
 var CHANGELOG=[
+{v:"1.10.72",t:"PDF 导入提速：整页识别改成单次长等待，不再同一页重复发两个请求白等，资料分析大表格页明显省时"},
 {v:"1.10.71",t:"PDF 导入识别更完整：一页多题会逐题全部识别，失败的页会自动多轮重试，并在结果里列出没识别成功的页码，方便补录"},
 {v:"1.10.70",t:"图表配图可云同步：图形推理的图形、资料分析的表格图表会跟着同步到平板和电脑，换设备也能看图做题"},
 {v:"1.10.69",t:"PDF 导入可以后台持续识别，进度同步到通知栏；图形推理的图形、资料分析的表格图表自动单独存档，复习和组卷时直接看原图"},
@@ -2215,8 +2216,8 @@ function aiRace(mainFn,fbFn,delayMs){
     });
   });
 }
-async function aiVisionChat(endpoint,ak,bodyObj,fallbackModel,delayMs){
-  if(!fallbackModel) return await aiCallRaw(endpoint,ak,bodyObj,120000);
+async function aiVisionChat(endpoint,ak,bodyObj,fallbackModel,delayMs,maxMs){
+  if(!fallbackModel) return await aiCallRaw(endpoint,ak,bodyObj,maxMs||120000);
   var fbBody=JSON.parse(JSON.stringify(bodyObj));
   fbBody.model=fallbackModel;
   if(fbBody.reasoning_effort) delete fbBody.reasoning_effort;
@@ -2482,7 +2483,7 @@ function guessRecMaxTok(src){
     im.src=src;
   });
 }
-async function runRecognition(processed){
+async function runRecognition(processed,pdfMode){
   var cred=aiVisionCred();
   var provider=cred.provider, ak=cred.key, model=cred.model;
   var endpoint=DEV_AI_ENDPOINT;
@@ -2494,7 +2495,7 @@ async function runRecognition(processed){
   var is20=visionModelChoice()==="20";
   var fb=is20?DEV_AI_VISION_MODEL:DEV_AI_VISION_MODEL_FALLBACK;
   if(model===DEV_AI_VISION_MODEL_FALLBACK) delete bodyObj.reasoning_effort;
-  var data=await aiVisionChat(endpoint,ak,bodyObj,fb,is20?45000:60000);
+  var data=pdfMode?await aiVisionChat(endpoint,ak,bodyObj,null,0,150000):await aiVisionChat(endpoint,ak,bodyObj,fb,is20?45000:60000);
   var msg0=data.choices&&data.choices[0]?data.choices[0].message:null;
   var parsed=parseAiJson(msgText(msg0));
   var fr0=data.choices&&data.choices[0]?data.choices[0].finish_reason:"";
@@ -2725,7 +2726,7 @@ async function pdfImportRun(pages){
       buf=null;
       if(urls.length){
         var lpy=lp(); if(lpy) lpy.textContent="已转好 "+okPages+" 页，正在识别本批（"+urls.length+" 页）…";
-        var sum=await runBatchCore(urls,null,{offset:okPages,grand:pages,unit:"页",quiet:true,deepRetry:true});
+        var sum=await runBatchCore(urls,null,{offset:okPages,grand:pages,unit:"页",quiet:true,deepRetry:true,pdfMode:true});
         okPages+=urls.length;
         if(sum&&sum.failedIdx&&sum.failedIdx.length){for(var fb=0;fb<sum.failedIdx.length;fb++)badPages.push(from+sum.failedIdx[fb]+1)}
         pdfNotify("PDF 已识别 "+okPages+"/"+pages+" 页");
@@ -2789,7 +2790,7 @@ function recCacheGet(k,src){try{var o=JSON.parse(localStorage.getItem("cb_rec_ca
 function recCachePut(k,src,items){try{var o={};try{o=JSON.parse(localStorage.getItem("cb_rec_cache")||"{}")}catch(e2){}o[k]={ts:Date.now(),items:items,len:String(src).length,head:String(src).slice(0,256),tail:String(src).slice(Math.max(0,String(src).length-64))};var ks=Object.keys(o).sort(function(a,b){return o[a].ts-o[b].ts});while(ks.length>20){delete o[ks.shift()]}localStorage.setItem("cb_rec_cache",JSON.stringify(o))}catch(e3){}}
 async function runBatchCore(urls,lp,opt){
   opt=opt||{};
-  var __off=opt.offset||0,__grand=opt.grand||urls.length,__unit=opt.unit||"张",__quiet=!!opt.quiet,__deep=!!opt.deepRetry;
+  var __off=opt.offset||0,__grand=opt.grand||urls.length,__unit=opt.unit||"张",__quiet=!!opt.quiet,__deep=!!opt.deepRetry,__pdf=!!opt.pdfMode;
   var failCount=0, okCount=0, failedIdx=[];
   var conc=batchConc();
   progShow("正在读取并预处理照片",0,urls.length,false,"准备第 1 张…");
@@ -2798,7 +2799,7 @@ async function runBatchCore(urls,lp,opt){
       var processed=await preprocessImage(u);
       var rk=recCacheFinger(processed),rhit=recCacheGet(rk,processed);
       if(rhit) return {ok:true,processed:processed,items:rhit,cached:true};
-      var items=await runRecognition(processed);
+      var items=await runRecognition(processed,__pdf);
       if(items&&items.length)recCachePut(rk,processed,items.map(function(x){return JSON.parse(JSON.stringify(x))}));
       return {ok:true,processed:processed,items:items||[]};
     }catch(e){ return {ok:false,processed:null,items:[]}; }
