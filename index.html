@@ -841,7 +841,7 @@ function normKeywords(mod,arr){
 }
 var examQs=[], examAns={}, examTimer=null, examSec=0;
 var kwFilter="";
-var APP_VERSION_CODE=128; var APP_VERSION_NAME="1.10.70";
+var APP_VERSION_CODE=129; var APP_VERSION_NAME="1.10.71";
 
 // ===== VIEW SWITCH =====
 function sv(v){
@@ -1645,6 +1645,7 @@ function warnDupAfterSave(saved){
   },1200);
 }
 var CHANGELOG=[
+{v:"1.10.71",t:"PDF 导入识别更完整：一页多题会逐题全部识别，失败的页会自动多轮重试，并在结果里列出没识别成功的页码，方便补录"},
 {v:"1.10.70",t:"图表配图可云同步：图形推理的图形、资料分析的表格图表会跟着同步到平板和电脑，换设备也能看图做题"},
 {v:"1.10.69",t:"PDF 导入可以后台持续识别，进度同步到通知栏；图形推理的图形、资料分析的表格图表自动单独存档，复习和组卷时直接看原图"},
 {v:"1.10.68",t:"PDF 导入上限提升到 120 页，改为分批转换、分批识别，整本错题集也能一次导入；页数较多时会先确认额度消耗"},
@@ -2472,7 +2473,7 @@ function saveTextAI(){
     },function(err){if(err){errN++}else{n++;saved.push({id:sid,q:r.question||""})}doneN++;if(doneN<aiR.length)return;if(n>0&&errN===0){toast("已保存 "+n+" 道错题");document.getElementById("cb-text-inp").value="";document.getElementById("cb-text-results").style.display="none";sv("dashboard");quietBackup();sbQueueSync();setTimeout(function(){warnDupAfterSave(saved)},1500)}else if(n>0){toast("已保存 "+n+" 道，"+errN+" 道没写进去（可能是手机存储空间不足）",5000)}else{toast("保存失败：手机存储空间可能不足，请清理后重试",5200)}});
   }
 }
-var PHOTO_REC_PROMPT='你是公务员考试(省考/国考)错题识别与题型归类专家。请分析这张试卷/练习照片，逐题识别所有错题，严格按JSON数组返回，不要任何解释。\n\n【最高优先：忽略手写与批改】\n照片上可能混有黑色签字笔手写字、红色批改（打叉、画圈、打勾、评分、签名、改错字）。手写内容和批改痕迹都不是题目本身：只逐字转录印刷体题干与选项，绝对禁止把手写字、批改字当成题目或答案转录；被手写覆盖看不清的印刷字用“□”代替，禁止臆测。红笔勾选/圈注仅用于判断 answer 字段，其内容不转录。\n\n【最重硬性要求】\n1. 题目必须逐字转录，禁止概括、改写或编造；看不清的字用“□”代替。\n2. 选项必须完整转录A/B/C/D原文；图形题的题干写“（图形题，原图见附图）”，图形细节写进visualDescription。\n3. 答案answer：只有图片中明确标注了正确答案（如“答案：B”、红色勾选、批改对勾）才填选项字母；否则一律填null，绝对禁止猜测。\n4. 难度difficulty：只能填整数1、2或3。\n5. 没有依据的解析analysis填null。\n\n数组每项字段：\nmodule：只能是常识判断/言语理解与表达/数量关系/判断推理/资料分析/申论/面试/公共基础知识之一\nquestionType：具体题型，只能从下列标准库选择：常识判断(政治常识/法律常识/经济常识/人文历史/科技生活/地理国情/管理公文)、言语理解与表达(逻辑填空/片段阅读/语句表达/文章阅读)、数量关系(数学运算/数字推理)、判断推理(图形推理/定义判断/类比推理/逻辑判断/事件排序)、资料分析(增长相关/比重相关/平均数与倍数/综合分析)、申论(归纳概括/综合分析/提出对策/贯彻执行/文章写作)、面试(综合分析/计划组织/应急应变/人际关系/自我认知)、公共基础知识(政治理论/法律基础/经济知识/管理基础/公文写作/科技人文/时事政治)\nanswerFormat：单选/多选/判断/不定项/案例分析/公文写作/大作文/其他\nquestion：逐字转录的完整题干和全部选项，图形题写“（图形题，原图见附图）”\nvisualDescription：图形推理/统计图/表格的详细视觉描述（图形的形状、数量、位置、方向、颜色；表格按行列完整转录全部数据），纯文字题填null\nanswer：图片中明确标注的正确答案字母，否则null\nanalysis：简要解析，无依据填null\ndifficulty：整数1或2或3\nsource：真题/模拟题/专项练习/未知\nerrorCause：知识点不熟/粗心大意/理解偏差/时间不够/审题错误/其他\nkeywords：只能从下方【考点库】该模块的考点中选择，最多3个，禁止自造名称、禁止带“高频/重点”等修饰词\n\n【判定规则】\n1. 图形、九宫格、折纸盒、找规律→判断推理-图形推理；先给定义再选符合项→定义判断；一对或多对词语→类比推理；论点论据推出结论→逻辑判断。\n2. 空缺词语填空→言语理解与表达-逻辑填空；问主旨/意图/细节/推断→片段阅读；语句排序或语句填空→语句表达。\n3. 数字运算、方程、行程、工程、排列组合、概率→数量关系-数学运算；数字序列找规律→数字推理。\n4. 统计表/统计图/百分比/倍数/平均数→资料分析，按考点归入增长相关/比重相关/平均数与倍数/综合分析。\n5. 【资料分析数字铁律】表格和图表必须逐行逐列读取数字，完整转录进visualDescription（格式如“年份/指标:数值”），保留小数点、百分号、负号、单位；数字必须与图片完全一致，禁止估算、四舍五入、漏写、编造；看不清的数字写“□”。题干引用的所有数值同样逐字转录。\n6. 申论小题按设问归类，写文章→文章写作。\n7. 面试题按测评要素归类。\n8. 事业单位公共基础知识（公基）类题目→公共基础知识，按考点归入政治理论/法律基础/经济知识/管理基础/公文写作/科技人文/时事政治。\n\n如果图片模糊无法识别，返回{"error":"图片无法识别"}。';
+var PHOTO_REC_PROMPT='你是公务员考试(省考/国考)错题识别与题型归类专家。请分析这张试卷/练习照片，逐题识别所有错题，严格按JSON数组返回，不要任何解释。\n\n【最高优先：忽略手写与批改】\n照片上可能混有黑色签字笔手写字、红色批改（打叉、画圈、打勾、评分、签名、改错字）。手写内容和批改痕迹都不是题目本身：只逐字转录印刷体题干与选项，绝对禁止把手写字、批改字当成题目或答案转录；被手写覆盖看不清的印刷字用“□”代替，禁止臆测。红笔勾选/圈注仅用于判断 answer 字段，其内容不转录。\n\n【最重硬性要求】\n1. 题目必须逐字转录，禁止概括、改写或编造；看不清的字用“□”代替。\n2. 选项必须完整转录A/B/C/D原文；图形题的题干写“（图形题，原图见附图）”，图形细节写进visualDescription。\n3. 答案answer：只有图片中明确标注了正确答案（如“答案：B”、红色勾选、批改对勾）才填选项字母；否则一律填null，绝对禁止猜测。\n4. 难度difficulty：只能填整数1、2或3。\n5. 没有依据的解析analysis填null。\n\n【多题页面铁律】一张图里经常有多道题（一页可能有 2~6 道）。必须按题号顺序把页面里的全部题目都识别出来：有几道就返回几道，严禁只返回第一道、严禁把多道题合并成一道、严禁跳过中间的题。逐题核对题号（如「1.」「2.」「第3题」）确认没有遗漏，返回的数组长度必须等于实际题目数量。资料分析一页里多道小题共用同一份表格或图表时，每道小题各返回一项，visualDescription 里写同一份材料要点。\n\n数组每项字段：\nmodule：只能是常识判断/言语理解与表达/数量关系/判断推理/资料分析/申论/面试/公共基础知识之一\nquestionType：具体题型，只能从下列标准库选择：常识判断(政治常识/法律常识/经济常识/人文历史/科技生活/地理国情/管理公文)、言语理解与表达(逻辑填空/片段阅读/语句表达/文章阅读)、数量关系(数学运算/数字推理)、判断推理(图形推理/定义判断/类比推理/逻辑判断/事件排序)、资料分析(增长相关/比重相关/平均数与倍数/综合分析)、申论(归纳概括/综合分析/提出对策/贯彻执行/文章写作)、面试(综合分析/计划组织/应急应变/人际关系/自我认知)、公共基础知识(政治理论/法律基础/经济知识/管理基础/公文写作/科技人文/时事政治)\nanswerFormat：单选/多选/判断/不定项/案例分析/公文写作/大作文/其他\nquestion：逐字转录的完整题干和全部选项，图形题写“（图形题，原图见附图）”\nvisualDescription：图形推理/统计图/表格的详细视觉描述（图形的形状、数量、位置、方向、颜色；表格按行列完整转录全部数据），纯文字题填null\nanswer：图片中明确标注的正确答案字母，否则null\nanalysis：简要解析，无依据填null\ndifficulty：整数1或2或3\nsource：真题/模拟题/专项练习/未知\nerrorCause：知识点不熟/粗心大意/理解偏差/时间不够/审题错误/其他\nkeywords：只能从下方【考点库】该模块的考点中选择，最多3个，禁止自造名称、禁止带“高频/重点”等修饰词\n\n【判定规则】\n1. 图形、九宫格、折纸盒、找规律→判断推理-图形推理；先给定义再选符合项→定义判断；一对或多对词语→类比推理；论点论据推出结论→逻辑判断。\n2. 空缺词语填空→言语理解与表达-逻辑填空；问主旨/意图/细节/推断→片段阅读；语句排序或语句填空→语句表达。\n3. 数字运算、方程、行程、工程、排列组合、概率→数量关系-数学运算；数字序列找规律→数字推理。\n4. 统计表/统计图/百分比/倍数/平均数→资料分析，按考点归入增长相关/比重相关/平均数与倍数/综合分析。\n5. 【资料分析数字铁律】表格和图表必须逐行逐列读取数字，完整转录进visualDescription（格式如“年份/指标:数值”），保留小数点、百分号、负号、单位；数字必须与图片完全一致，禁止估算、四舍五入、漏写、编造；看不清的数字写“□”。题干引用的所有数值同样逐字转录。\n6. 申论小题按设问归类，写文章→文章写作。\n7. 面试题按测评要素归类。\n8. 事业单位公共基础知识（公基）类题目→公共基础知识，按考点归入政治理论/法律基础/经济知识/管理基础/公文写作/科技人文/时事政治。\n\n如果图片模糊无法识别，返回{"error":"图片无法识别"}。';
 function guessRecMaxTok(src){
   return new Promise(function(res){
     var im=new Image();
@@ -2705,7 +2706,7 @@ window.__pdfPicked=function(ok,msg,pages,name){
 async function pdfImportRun(pages){
   aiR=[]; aiPhotoCount=0;
   aiTaskStart();
-  var failed=0,okPages=0;
+  var failed=0,okPages=0,badPages=[];
   var lp=function(){return document.querySelector("#cb-ai-loading p")};
   try{
     for(var from=0;from<pages;from+=PDF_CHUNK){
@@ -2724,8 +2725,9 @@ async function pdfImportRun(pages){
       buf=null;
       if(urls.length){
         var lpy=lp(); if(lpy) lpy.textContent="已转好 "+okPages+" 页，正在识别本批（"+urls.length+" 页）…";
-        await runBatchCore(urls,null,{offset:okPages,grand:pages,unit:"页",quiet:true});
+        var sum=await runBatchCore(urls,null,{offset:okPages,grand:pages,unit:"页",quiet:true,deepRetry:true});
         okPages+=urls.length;
+        if(sum&&sum.failedIdx&&sum.failedIdx.length){for(var fb=0;fb<sum.failedIdx.length;fb++)badPages.push(from+sum.failedIdx[fb]+1)}
         pdfNotify("PDF 已识别 "+okPages+"/"+pages+" 页");
       }
     }
@@ -2733,7 +2735,12 @@ async function pdfImportRun(pages){
     renderAI();
     progHide();
     if(aiR.length){
-      toast("PDF 识别完成：共 "+pages+" 页"+(failed?("，"+failed+" 页没转成功"):"")+"，识别到 "+aiR.length+" 道题",4500);
+      var badTip=badPages.length?("；第 "+(badPages.length>10?(badPages.slice(0,10).join("、")+" 等 "+badPages.length+" 页"):(badPages.join("、")+" 页"))+"没识别出内容（不扣额度）"):"";
+      toast("PDF 识别完成：共 "+pages+" 页"+(failed?("，"+failed+" 页没转成功"):"")+"，识别到 "+aiR.length+" 道题"+badTip,6500);
+      if(badPages.length||failed){
+        var lbp=document.getElementById("cb-ai-list");
+        if(lbp) lbp.insertAdjacentHTML("afterbegin",'<div style="margin-bottom:8px;font-size:0.75rem;color:#dd6b20;background:rgba(221,107,32,0.08);border:1px dashed #ed8936;border-radius:8px;padding:8px;line-height:1.6">⚠️ 本次共 '+pages+' 页，识别到 '+aiR.length+' 道题。'+(failed?("有 "+failed+" 页没能转成图片。 "):"")+(badPages.length?("有 "+badPages.length+" 页没识别出题目（失败不扣额度）：第 "+(badPages.length>16?(badPages.slice(0,16).join("、")+" …"):badPages.join("、"))+" 页。<br>这几页可以单独拍照补录，或等网络稳定后重新导入。"):"")+'</div>');
+      }
     }else{
       var l3=document.getElementById("cb-ai-list");
       if(l3) l3.innerHTML='<div class="cb-empty" style="color:#e53e3e">没能从这份 PDF 里识别出题目，可以换清晰一点的版本再试</div>';
@@ -2782,7 +2789,7 @@ function recCacheGet(k,src){try{var o=JSON.parse(localStorage.getItem("cb_rec_ca
 function recCachePut(k,src,items){try{var o={};try{o=JSON.parse(localStorage.getItem("cb_rec_cache")||"{}")}catch(e2){}o[k]={ts:Date.now(),items:items,len:String(src).length,head:String(src).slice(0,256),tail:String(src).slice(Math.max(0,String(src).length-64))};var ks=Object.keys(o).sort(function(a,b){return o[a].ts-o[b].ts});while(ks.length>20){delete o[ks.shift()]}localStorage.setItem("cb_rec_cache",JSON.stringify(o))}catch(e3){}}
 async function runBatchCore(urls,lp,opt){
   opt=opt||{};
-  var __off=opt.offset||0,__grand=opt.grand||urls.length,__unit=opt.unit||"张",__quiet=!!opt.quiet;
+  var __off=opt.offset||0,__grand=opt.grand||urls.length,__unit=opt.unit||"张",__quiet=!!opt.quiet,__deep=!!opt.deepRetry;
   var failCount=0, okCount=0, failedIdx=[];
   var conc=batchConc();
   progShow("正在读取并预处理照片",0,urls.length,false,"准备第 1 张…");
@@ -2840,6 +2847,21 @@ async function runBatchCore(urls,lp,opt){
     failCount=stillFail.length;
     failedIdx=stillFail;
   }
+  if(failedIdx.length&&__deep){
+    var retryUrls2=failedIdx.map(function(fi){return urls[fi]});
+    await new Promise(function(r){setTimeout(r,1500)});
+    var r2=await mapLimit(retryUrls2,1,processOne);
+    var still2=[];
+    for(var k3=0;k3<r2.length;k3++){
+      var rr2=r2[k3],gi3=failedIdx[k3];
+      progSetPct("正在重试识别",Math.min(__off+gi3+1,__grand),__grand);
+      if(rr2.ok&&rr2.items.length){
+        for(var j3=0;j3<rr2.items.length;j3++){rr2.items[j3].img=(rr2.items[j3].box&&rr2.items[j3].box.x!=null)?await cropImageRegion(rr2.processed,rr2.items[j3].box):(rr2.items.length===1?rr2.processed:null);rr2.items[j3].fig=(rr2.items[j3].figureBox&&rr2.items[j3].figureBox.x!=null)?await cropImageRegion(rr2.processed,rr2.items[j3].figureBox):null;aiR.push(rr2.items[j3])}
+        aiPhotoCount++; okCount++; if(!rr2.cached)vipMarkAiUsed();
+      } else { still2.push(gi3); }
+    }
+    failCount=still2.length; failedIdx=still2;
+  }
   renderAI();
   var msg=failCount>0?((okCount>0?("识别完成 "+okCount+" 张，"+(urls.length-okCount)+" 张未识别出（失败不扣额度）"):("识别失败，"+urls.length+" 张均未识别出（本次不扣额度）"))):("批量识别完成，共 "+okCount+" 张");
   if(!__quiet) toast(msg);
@@ -2848,6 +2870,7 @@ async function runBatchCore(urls,lp,opt){
     if(fl)fl.insertAdjacentHTML("beforeend",'<div style="margin-top:8px;font-size:0.75rem;color:#dd6b20;background:rgba(221,107,32,0.08);border:1px dashed #ed8936;border-radius:8px;padding:8px">⚠️ 以下图片识别失败（图片模糊、光线差或服务波动）：<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px">'+failedIdx.map(function(fi){return '<div style="text-align:center;width:88px"><img src="'+urls[fi]+'" style="width:88px;height:88px;object-fit:cover;border-radius:6px;border:1px solid var(--border)"><div style="font-size:0.62rem;color:var(--text2);margin-top:2px">第 '+(fi+1)+' 张</div></div>'}).join("")+'</div><p style="margin:6px 0 0">对照缩略图找到原图后，重新拍/选该张单独重试即可</p></div>');
   }
   if(aiR.length) await genAnalysis();
+  return {ok:okCount,fail:failCount,total:urls.length,failedIdx:failedIdx.slice(),items:aiR.length};
 }
 
 // Image compression: resize + JPEG encode to avoid token limit issues
