@@ -841,7 +841,7 @@ function normKeywords(mod,arr){
 }
 var examQs=[], examAns={}, examTimer=null, examSec=0;
 var kwFilter="";
-var APP_VERSION_CODE=127; var APP_VERSION_NAME="1.10.69";
+var APP_VERSION_CODE=128; var APP_VERSION_NAME="1.10.70";
 
 // ===== VIEW SWITCH =====
 function sv(v){
@@ -1493,7 +1493,7 @@ function normImportItem(x){
     qtype:(QTYPES[m]||["其他"]).indexOf(x&&x.qtype)>=0?x.qtype:(QTYPES[m]||["其他"])[0],
     qfmt:AF_TYPES.indexOf(x&&x.qfmt)>=0?x.qfmt:AF_TYPES[0],
     diff:[1,2,3].indexOf(x&&x.diff)>=0?x.diff:2,src:(x&&x.src)||"未知",cause:CAUSES.indexOf(x&&x.cause)>=0?x.cause:"其他",
-    verify:(x&&x.verify)==="已核对"?"已核对":"待核对",kw:Array.isArray(x&&x.kw)?x.kw:[],img:safeImg,imgOrig:(typeof (x&&x.imgOrig)==="string"&&x.imgOrig.indexOf("data:image/")===0&&x.imgOrig.length<2000000)?x.imgOrig:null,notes:(x&&x.notes)||"",
+    verify:(x&&x.verify)==="已核对"?"已核对":"待核对",kw:Array.isArray(x&&x.kw)?x.kw:[],img:safeImg,imgOrig:(typeof (x&&x.imgOrig)==="string"&&x.imgOrig.indexOf("data:image/")===0&&x.imgOrig.length<2000000)?x.imgOrig:null,fig:(typeof (x&&x.fig)==="string"&&x.fig.indexOf("data:image/")===0&&x.fig.length<2000000)?x.fig:null,notes:(x&&x.notes)||"",
     lv:(x&&x.lv)||0,ef:(x&&x.ef)||2.5,iv:(x&&x.iv)||1,nr:(x&&x.nr)||new Date().toISOString(),rep:(x&&x.rep)||0,
     hist:Array.isArray(x&&x.hist)?x.hist:[],ct:(x&&x.ct)||new Date().toISOString(),lr:(x&&x.lr)||null,ut:new Date().toISOString()};
 }
@@ -1645,6 +1645,7 @@ function warnDupAfterSave(saved){
   },1200);
 }
 var CHANGELOG=[
+{v:"1.10.70",t:"图表配图可云同步：图形推理的图形、资料分析的表格图表会跟着同步到平板和电脑，换设备也能看图做题"},
 {v:"1.10.69",t:"PDF 导入可以后台持续识别，进度同步到通知栏；图形推理的图形、资料分析的表格图表自动单独存档，复习和组卷时直接看原图"},
 {v:"1.10.68",t:"PDF 导入上限提升到 120 页，改为分批转换、分批识别，整本错题集也能一次导入；页数较多时会先确认额度消耗"},
 {v:"1.10.67",t:"解析重点上色：技巧、考点、注意、易错、结论等要点自动用不同颜色标出，关键步骤一眼看清"},
@@ -3858,7 +3859,7 @@ function sbFetchAll(c){
   }
   return next().then(function(){return rows});
 }
-function sbStripImg(data){ if(data&&typeof data==="object"){var d2={};for(var k in data){if(k!=="img"&&k!=="imgOrig")d2[k]=data[k]}d2.hasImg=!!data.img;return d2} return data }
+function sbStripImg(data){ if(data&&typeof data==="object"){var d2={};for(var k in data){if(k!=="img"&&k!=="imgOrig"&&k!=="fig")d2[k]=data[k]}d2.hasImg=!!data.img;d2.hasFig=!!data.fig;return d2} return data }
 function sbRurlImg(c,path){return c.url+"/rest/v1/cb_img"+path}
 function sbImgUpsertBatch(c,items){
   function part(i){
@@ -3994,20 +3995,25 @@ async function sbSyncNow(silent){
     var delRemote={};ops.delRemote.forEach(function(id){delRemote[id]=1});
     if(rows.length)await sbUpsert(c,rows);
     try{
-      var qImg=await new Promise(function(res,rej){dbAll(function(e,a){e?rej(e):res((a||[]).filter(function(q){return q&&q.img}))})});
+      var qImg=await new Promise(function(res,rej){dbAll(function(e,a){e?rej(e):res((a||[]).filter(function(q){return q&&(q.img||q.fig)}))})});
       var imgItems=[];
-      for(var ii=0;ii<qImg.length;ii++){var qi2=qImg[ii],k2="cb_img_up_"+qi2.id,len2=qi2.img.length;if(localStorage.getItem(k2)===String(len2))continue;imgItems.push({id:qi2.id,data:qi2.img,updated_at:new Date().toISOString()})}
+      for(var ii=0;ii<qImg.length;ii++){var qi2=qImg[ii];
+        if(qi2.img){var k2="cb_img_up_"+qi2.id,len2=qi2.img.length;if(localStorage.getItem(k2)!==String(len2))imgItems.push({id:qi2.id,data:qi2.img,updated_at:new Date().toISOString()})}
+        if(qi2.fig){var kf="cb_img_up_"+qi2.id+"__fig",lenf=qi2.fig.length;if(localStorage.getItem(kf)!==String(lenf))imgItems.push({id:qi2.id+"__fig",data:qi2.fig,updated_at:new Date().toISOString()})}
+      }
       if(imgItems.length){await sbImgUpsertBatch(c,imgItems);for(var ii2=0;ii2<imgItems.length;ii2++){try{localStorage.setItem("cb_img_up_"+imgItems[ii2].id,String(imgItems[ii2].data.length))}catch(e2){}}}
     }catch(eImg){}
     if(Object.keys(delRemote).length)await sbDeleteRows(c,Object.keys(delRemote));
     var qkeys=Object.keys(putQMap),dkeys=Object.keys(putDayMap);
-    var needImg=[];
+    var needImg=[],needFig=[];
     for(var qi=0;qi<qkeys.length;qi++){
       var qid0=qkeys[qi],qrow=putQMap[qid0];
       if(qrow&&qrow.kind==="q"&&qrow.data){
         var lok=await new Promise(function(res){dbGet(qid0,function(e,q){res(q||null)})});
         if(lok&&lok.img){qrow.img=lok.img;qrow.ut=qrow.ut||new Date().toISOString()}
         else if(qrow.data.hasImg){needImg.push(qid0)}
+        if(lok&&lok.fig){qrow.fig=lok.fig;qrow.ut=qrow.ut||new Date().toISOString()}
+        else if(qrow.data.hasFig){needFig.push(qid0)}
       }
       await sbDbPut(qrow);
     }
@@ -4015,6 +4021,11 @@ async function sbSyncNow(silent){
       for(var zg=0;zg<needImg.length;zg++){(function(zid){
         sbImgGet(c,zid).then(function(b64){ if(b64){dbGet(zid,function(e2,qq){if(!e2&&qq){qq.img=b64;qq.ut=qq.ut||new Date().toISOString();dbPut(qq,function(){})}})}}).catch(function(){});
       })(needImg[zg]);}
+    }
+    if(needFig.length){
+      for(var zf=0;zf<needFig.length;zf++){(function(zid){
+        sbImgGet(c,zid+"__fig").then(function(b64){ if(b64){dbGet(zid,function(e3,qq){if(!e3&&qq){qq.fig=b64;qq.ut=qq.ut||new Date().toISOString();dbPut(qq,function(){})}})}}).catch(function(){});
+      })(needFig[zf]);}
     }
     for(var di=0;di<dkeys.length;di++){var dk0=dkeys[di];await sbDbDayPut(putDayMap[dk0])}
     for(var xi=0;xi<ops.delQ.length;xi++){var xid=ops.delQ[xi];await sbDbDel(xid)}
