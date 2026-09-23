@@ -568,6 +568,7 @@ function clearPhotoQueue(){
 }
 function cbPhotoMode(){var m=localStorage.getItem("cb_photo_mode")||"25";return m==="20"||m==="simple"?m:"25"}
 function simpleMode(){return cbPhotoMode()==="simple"}
+function anaSkipOn(){try{return localStorage.getItem("cb_skip_analysis")==="1"}catch(e){return false}}
 function setPhotoMode(m){
   localStorage.setItem("cb_photo_mode",m);
   var s=document.getElementById("cb-set-vision");
@@ -841,7 +842,7 @@ function normKeywords(mod,arr){
 }
 var examQs=[], examAns={}, examTimer=null, examSec=0;
 var kwFilter="";
-var APP_VERSION_CODE=132; var APP_VERSION_NAME="1.10.74";
+var APP_VERSION_CODE=133; var APP_VERSION_NAME="1.10.75";
 
 // ===== VIEW SWITCH =====
 function sv(v){
@@ -1645,6 +1646,7 @@ function warnDupAfterSave(saved){
   },1200);
 }
 var CHANGELOG=[
+{v:"1.10.75",t:"录入页新增「本次识别不生成解析」开关：题目和题图照常保存，只是跳过耗时的逐题解析，导入大批题目不用久等，解析可以稍后单题生成"},
 {v:"1.10.74",t:"修复图形推理、资料分析不存原图的问题：题目截图和图表截图现在都会保存下来，复习和组卷时直接看图做题"},
 {v:"1.10.73",t:"修复图形推理跨页拆题：题干在上一页、图形在下一页时，自动把下一页顶部的图形并回原题，不再多出一道没有题干的空题"},
 {v:"1.10.72",t:"PDF 导入提速：整页识别改成单次长等待，不再同一页重复发两个请求白等，资料分析大表格页明显省时"},
@@ -2421,7 +2423,8 @@ async function textRecognition(){
     aiR=parsed.map(function(x){var m=normMod(x.module);return {module:m,questionType:normQtype(m,x.questionType),answerFormat:AF_TYPES.indexOf(x.answerFormat)>=0?x.answerFormat:AF_TYPES[0],question:x.question||"",answer:x.answer||"",analysis:x.analysis||"",visualDescription:null,difficulty:[1,2,3].indexOf(x.difficulty)>=0?x.difficulty:2,source:x.source||"未知",errorCause:normCause(x.errorCause),keywords:normKeywords(m,x.keywords)};});
     aiPhoto="";
     renderTextAI();
-    await genTextAnalysis();
+    if(anaSkipOn()) toast("识别完成，本次未生成解析（可逐题点「重试解析」）",3400);
+    else await genTextAnalysis();
   }catch(err){
     var msg=String(err&&err.message||err||"未知错误");
     document.getElementById("cb-text-list").innerHTML='<div class="cb-empty" style="color:#e53e3e">'+msg.replace(/</g,"&lt;")+'</div>';
@@ -2592,8 +2595,8 @@ async function analyzePhoto(){
     if(items&&items.length&&!rhit) vipMarkAiUsed();
     if(stopT){stopT();stopT=null}
     renderAI();
-    if(aiR.length) await genAnalysis();
-    else progHide();
+    if(aiR.length&&!anaSkipOn()) await genAnalysis();
+    else {progHide(); if(aiR.length) toast("识别完成，本次未生成解析（可逐题点「重试解析」）",3400)}
   }catch(err){
     var msg=String(err&&err.message||err||"未知错误");
     progHide();
@@ -2624,7 +2627,7 @@ async function batchAnalyze(files){
       var f=files[i];
       urls.push(await new Promise(function(res,rej){var fr=new FileReader();fr.onload=function(){res(fr.result)};fr.onerror=function(){rej(new Error("图片读取失败"))};fr.readAsDataURL(f)}));
     }
-    await runBatchCore(urls,lp);
+    await runBatchCore(urls,lp,{noAnalysis:anaSkipOn()});
   }catch(err){
     var msg=String(err&&err.message||err||"未知错误");
     document.getElementById("cb-ai-list").innerHTML='<div class="cb-empty" style="color:#e53e3e">'+msg.replace(/</g,"&lt;")+'</div>';
@@ -2764,7 +2767,7 @@ async function pdfImportRun(pages){
       buf=null;
       if(urls.length){
         var lpy=lp(); if(lpy) lpy.textContent="已转好 "+okPages+" 页，正在识别本批（"+urls.length+" 页）…";
-        var sum=await runBatchCore(urls,null,{offset:okPages,grand:pages,unit:"页",quiet:true,deepRetry:true,pdfMode:true});
+        var sum=await runBatchCore(urls,null,{offset:okPages,grand:pages,unit:"页",quiet:true,deepRetry:true,pdfMode:true,noAnalysis:anaSkipOn()});
         okPages+=urls.length;
         if(sum&&sum.failedIdx&&sum.failedIdx.length){for(var fb=0;fb<sum.failedIdx.length;fb++)badPages.push(from+sum.failedIdx[fb]+1)}
         pdfNotify("PDF 已识别 "+okPages+"/"+pages+" 页");
@@ -2775,7 +2778,7 @@ async function pdfImportRun(pages){
     progHide();
     if(aiR.length){
       var badTip=badPages.length?("；第 "+(badPages.length>10?(badPages.slice(0,10).join("、")+" 等 "+badPages.length+" 页"):(badPages.join("、")+" 页"))+"没识别出内容（不扣额度）"):"";
-      toast("PDF 识别完成：共 "+pages+" 页"+(failed?("，"+failed+" 页没转成功"):"")+"，识别到 "+aiR.length+" 道题"+badTip,6500);
+      toast("PDF 识别完成：共 "+pages+" 页"+(failed?("，"+failed+" 页没转成功"):"")+"，识别到 "+aiR.length+" 道题"+badTip+(anaSkipOn()?"（本次未生成解析，可逐题点「重试解析」）":""),7000);
       if(badPages.length||failed){
         var lbp=document.getElementById("cb-ai-list");
         if(lbp) lbp.insertAdjacentHTML("afterbegin",'<div style="margin-bottom:8px;font-size:0.75rem;color:#dd6b20;background:rgba(221,107,32,0.08);border:1px dashed #ed8936;border-radius:8px;padding:8px;line-height:1.6">⚠️ 本次共 '+pages+' 页，识别到 '+aiR.length+' 道题。'+(failed?("有 "+failed+" 页没能转成图片。 "):"")+(badPages.length?("有 "+badPages.length+" 页没识别出题目（失败不扣额度）：第 "+(badPages.length>16?(badPages.slice(0,16).join("、")+" …"):badPages.join("、"))+" 页。<br>这几页可以单独拍照补录，或等网络稳定后重新导入。"):"")+'</div>');
@@ -2810,7 +2813,7 @@ async function batchAnalyzeUrls(urls){
   var lp=document.querySelector("#cb-ai-loading p"); if(lp) lp.textContent="正在准备批量识图（共 "+urls.length+" 张）…";
   aiTaskStart();
   try{
-    await runBatchCore(urls,lp);
+    await runBatchCore(urls,lp,{noAnalysis:anaSkipOn()});
   }catch(err){
     var msg=String(err&&err.message||err||"未知错误");
     document.getElementById("cb-ai-list").innerHTML='<div class="cb-empty" style="color:#e53e3e">'+msg.replace(/</g,"&lt;")+'</div>';
@@ -2828,7 +2831,7 @@ function recCacheGet(k,src){try{var o=JSON.parse(localStorage.getItem("cb_rec_ca
 function recCachePut(k,src,items){try{var o={};try{o=JSON.parse(localStorage.getItem("cb_rec_cache")||"{}")}catch(e2){}o[k]={ts:Date.now(),items:items,len:String(src).length,head:String(src).slice(0,256),tail:String(src).slice(Math.max(0,String(src).length-64))};var ks=Object.keys(o).sort(function(a,b){return o[a].ts-o[b].ts});while(ks.length>20){delete o[ks.shift()]}localStorage.setItem("cb_rec_cache",JSON.stringify(o))}catch(e3){}}
 async function runBatchCore(urls,lp,opt){
   opt=opt||{};
-  var __off=opt.offset||0,__grand=opt.grand||urls.length,__unit=opt.unit||"张",__quiet=!!opt.quiet,__deep=!!opt.deepRetry,__pdf=!!opt.pdfMode;
+  var __off=opt.offset||0,__grand=opt.grand||urls.length,__unit=opt.unit||"张",__quiet=!!opt.quiet,__deep=!!opt.deepRetry,__pdf=!!opt.pdfMode,__noAna=!!opt.noAnalysis;
   var failCount=0, okCount=0, failedIdx=[];
   var conc=batchConc();
   progShow("正在读取并预处理照片",0,urls.length,false,"准备第 1 张…");
@@ -2909,7 +2912,8 @@ async function runBatchCore(urls,lp,opt){
     if(fl)fl.insertAdjacentHTML("beforeend",'<div style="margin-top:8px;font-size:0.75rem;color:#dd6b20;background:rgba(221,107,32,0.08);border:1px dashed #ed8936;border-radius:8px;padding:8px">⚠️ 以下图片识别失败（图片模糊、光线差或服务波动）：<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px">'+failedIdx.map(function(fi){return '<div style="text-align:center;width:88px"><img src="'+urls[fi]+'" style="width:88px;height:88px;object-fit:cover;border-radius:6px;border:1px solid var(--border)"><div style="font-size:0.62rem;color:var(--text2);margin-top:2px">第 '+(fi+1)+' 张</div></div>'}).join("")+'</div><p style="margin:6px 0 0">对照缩略图找到原图后，重新拍/选该张单独重试即可</p></div>');
   }
   if(__pdf){var __mn=mergePageFragments(); if(__mn) toast("已把跨页的图形/选项并回上一题（"+__mn+" 处）",3000);}
-  if(aiR.length) await genAnalysis();
+  if(aiR.length&&!__noAna) await genAnalysis();
+  if(__noAna&&aiR.length&&!__quiet) toast("识别完成，本次未生成解析（可逐题点「重试解析」）",3400);
   return {ok:okCount,fail:failCount,total:urls.length,failedIdx:failedIdx.slice(),items:aiR.length};
 }
 
@@ -4503,9 +4507,11 @@ function bindEvents(){
   // OCR
   el=document.getElementById("cb-photo-camera"); if(el) el.addEventListener("click",function(){var fi=document.getElementById("cb-photo-inp");fi.setAttribute("capture","environment");fi.focus();fi.click()}); el=document.getElementById("cb-photo-gallery"); if(el) el.addEventListener("click",function(){var fi=document.getElementById("cb-photo-inp");if(!fi.hasAttribute("multiple"))fi.setAttribute("multiple","");fi.removeAttribute("capture");fi.focus();fi.click()});
   (function(){var pv=document.getElementById("cb-photo-pv"); if(pv&&!document.getElementById("cb-photo-actions")){pv.insertAdjacentHTML("afterend",'<div id="cb-photo-qhint" style="display:none;font-size:0.75rem;color:var(--gold,#b8860b);background:rgba(184,134,11,0.10);border-radius:8px;padding:6px 10px;margin-bottom:8px"></div><div id="cb-photo-merge" style="display:none;gap:6px;margin-bottom:8px;flex-wrap:wrap"><button class="cb-btn ghost" onclick="mergePhotos(\'v\')" style="flex:1;font-size:0.78rem;padding:5px 8px;min-width:45%">↕ 上下拼接（跨页题）</button><button class="cb-btn ghost" onclick="mergePhotos(\'h\')" style="flex:1;font-size:0.78rem;padding:5px 8px;min-width:45%">↔ 左右拼接</button></div><div id="cb-photo-actions" style="display:none;gap:8px;margin-bottom:10px"><button class="cb-btn ghost" id="cb-photo-crop" style="flex:1;font-size:0.82rem">✂️ 裁剪照片</button><button class="cb-btn ghost" id="cb-photo-ai-clean" style="flex:1;font-size:0.82rem">🧽 AI 去笔迹</button><button class="cb-btn ghost" id="cb-photo-add" style="flex:1;font-size:0.82rem">➕ 继续添加</button><button class="cb-btn ghost" id="cb-photo-undo" style="flex:1;font-size:0.82rem;display:none">↩️ 恢复原图</button><button class="cb-btn ghost" id="cb-photo-clearq" style="flex:1;font-size:0.82rem;display:none">🗑 清空队列</button></div><p style="font-size:0.68rem;color:#dd6b20;margin:8px 0 0;line-height:1.6">🧽 AI 去笔迹会重绘整张图，文字密集的页面可能把印刷字重画变形（识别成乱字）。文字多的题建议用「简洁录入」里的本地 去红笔/去蓝笔/去铅笔（不重绘文字），或点上方「恢复原图」。</p>')}})();
+  (function(){var d0=document.getElementById("cb-photo-mode-desc");if(d0&&!document.getElementById("cb-skip-ana")){d0.insertAdjacentHTML("afterend",'<label id="cb-skip-ana" style="display:flex;align-items:flex-start;gap:8px;margin:0 2px 10px;font-size:0.74rem;color:var(--text2);background:var(--card);border:1px solid var(--border);border-radius:10px;padding:8px 10px;cursor:pointer"><input type="checkbox" id="cb-skip-ana-cb" style="width:16px;height:16px;margin-top:1px;accent-color:var(--pri);flex:0 0 auto"><span>⚡ 本次识别不生成解析（更快）<br><span style="font-size:0.66rem;color:#a0aec0">题目、题目图和图表照常识别保存；解析稍后可在每道题上单独生成</span></span></label>')}})();
   (function(){var host=document.getElementById("cb-tab-photo");if(host&&!document.getElementById("cb-photo-mode")){host.insertAdjacentHTML("afterbegin",'<div id="cb-photo-mode" style="display:flex;gap:6px;margin-bottom:4px"><button class="cb-btn pri" id="cb-mode-fine" style="flex:1;font-size:0.75rem;padding:7px 4px">✨ 精细识别</button><button class="cb-btn ghost" id="cb-mode-fast" style="flex:1;font-size:0.75rem;padding:7px 4px">⚡ 快速识别</button><button class="cb-btn ghost" id="cb-mode-simple" style="flex:1;font-size:0.75rem;padding:7px 4px">📥 简洁录入</button></div><p id="cb-photo-mode-desc" style="margin:6px 2px 10px;font-size:0.7rem;color:var(--text2);line-height:1.55"></p>')}})();
   (function(){var host=document.getElementById("cb-photo-actions");if(host&&!document.getElementById("cb-simple-wrap")){host.insertAdjacentHTML("afterend",'<div id="cb-simple-wrap"><div id="cb-simple-clean" style="display:none;gap:6px;flex-wrap:wrap;margin-bottom:8px"><button class="cb-btn ghost" onclick="cleanInkPhoto(\'red\')" style="font-size:0.72rem;padding:4px 10px">去红笔</button><button class="cb-btn ghost" onclick="cleanInkPhoto(\'blue\')" style="font-size:0.72rem;padding:4px 10px">去蓝笔</button><button class="cb-btn ghost" onclick="cleanInkPhoto(\'pencil\')" style="font-size:0.72rem;padding:4px 10px">去铅笔</button><button class="cb-btn ghost" onclick="cleanInkPhoto(\'auto\')" style="font-size:0.72rem;padding:4px 10px">自动去笔迹</button><p style="font-size:0.66rem;color:var(--text2);margin:4px 0 0;width:100%">自动去笔迹不走 AI、不扣额度；若仍有黑色手写，可再点「🧽 AI 去笔迹」</p></div><div id="cb-simple-form" style="display:none;border-top:1px dashed var(--border);padding-top:10px"><p id="cb-simple-count" style="font-size:0.68rem;color:#8a6d1a;margin:0 0 6px"></p><label style="font-size:0.75rem;color:var(--text2)">模块</label><select id="cb-simple-mod" onchange="simpleModChg(this.value)" style="width:100%;box-sizing:border-box;border:1px solid var(--border);border-radius:8px;padding:7px;font-size:0.82rem;margin-bottom:8px;background:var(--card);color:var(--text)"></select><div class="cb-form-row"><div class="cb-form-col"><label>题型</label><select id="cb-simple-qtype" style="width:100%;box-sizing:border-box;border:1px solid var(--border);border-radius:8px;padding:7px;font-size:0.82rem;background:var(--card);color:var(--text)"></select></div><div class="cb-form-col"><label>答题形式</label><select id="cb-simple-fmt" style="width:100%;box-sizing:border-box;border:1px solid var(--border);border-radius:8px;padding:7px;font-size:0.82rem;background:var(--card);color:var(--text)"><option>单选</option><option>多选</option><option>判断</option><option>不定项</option><option>案例分析</option><option>公文写作</option><option>大作文</option><option>其他</option></select></div></div><div class="cb-form-row"><div class="cb-form-col"><label>错因</label><select id="cb-simple-cause" style="width:100%;box-sizing:border-box;border:1px solid var(--border);border-radius:8px;padding:7px;font-size:0.82rem;background:var(--card);color:var(--text)"><option>知识点不熟</option><option>粗心大意</option><option>理解偏差</option><option>时间不够</option><option>审题错误</option><option>其他</option></select></div><div class="cb-form-col"><label>难度</label><select id="cb-simple-diff" style="width:100%;box-sizing:border-box;border:1px solid var(--border);border-radius:8px;padding:7px;font-size:0.82rem;background:var(--card);color:var(--text)"><option value="1">⭐</option><option value="2" selected>⭐⭐</option><option value="3">⭐⭐⭐</option></select></div></div><div class="cb-form-row"><div class="cb-form-col"><label>来源</label><select id="cb-simple-src" style="width:100%;box-sizing:border-box;border:1px solid var(--border);border-radius:8px;padding:7px;font-size:0.82rem;background:var(--card);color:var(--text)"><option>未知</option><option>真题</option><option>模拟题</option><option>专项练习</option></select></div></div><label style="font-size:0.75rem;color:var(--text2)">考点（可自创，逗号分隔）</label><input id="cb-simple-kw" placeholder="如：增长相关、速算" style="width:100%;box-sizing:border-box;border:1px solid var(--border);border-radius:8px;padding:7px;font-size:0.82rem;margin-bottom:8px;background:var(--card);color:var(--text)"><label style="font-size:0.75rem;color:var(--text2)">答案（可选，填了自动标已核对）</label><input id="cb-simple-ans" placeholder="如：B" style="width:100%;box-sizing:border-box;border:1px solid var(--border);border-radius:8px;padding:7px;font-size:0.82rem;margin-bottom:8px;background:var(--card);color:var(--text)"><label style="font-size:0.75rem;color:var(--text2)">备注 / 错题原因</label><textarea id="cb-simple-notes" rows="2" placeholder="记一句为什么错…" style="width:100%;box-sizing:border-box;border:1px solid var(--border);border-radius:8px;padding:7px;font-size:0.82rem;margin-bottom:8px;background:var(--card);color:var(--text);resize:vertical"></textarea><div style="display:flex;gap:8px;margin-top:4px"><button class="cb-btn pri" id="cb-simple-save" onclick="saveSimpleQuestion()" style="flex:1">💾 保存错题</button><button class="cb-btn ghost" onclick="closeSimpleForm()" style="flex:1">取消</button></div></div></div>')}})();
   (function(){var host=document.getElementById("cb-ai-loading");if(host&&!document.getElementById("cb-ai-prog")){host.insertAdjacentHTML("afterend",'<div id="cb-ai-prog" style="display:none;margin:10px 0 4px;background:rgba(26,54,93,0.06);border:1px solid rgba(26,54,93,0.12);border-radius:10px;padding:8px 10px"><div style="display:flex;justify-content:space-between;align-items:center;font-size:0.72rem;color:var(--text2);margin-bottom:5px"><span id="cb-ai-prog-label">处理中…</span><span id="cb-ai-prog-time">已用 0 秒</span></div><div style="height:8px;background:rgba(26,54,93,0.10);border-radius:8px;overflow:hidden"><div id="cb-ai-prog-fill" style="height:100%;width:0%;background:linear-gradient(90deg,#2a4a7f,#b8860b);border-radius:8px;transition:width .45s"></div></div><p id="cb-ai-prog-eta" style="font-size:0.68rem;color:#8a6d1a;margin:4px 0 0"></p></div>')}})();
+  el=document.getElementById("cb-skip-ana-cb"); if(el){el.checked=anaSkipOn(); el.addEventListener("change",function(){localStorage.setItem("cb_skip_analysis",el.checked?"1":"0"); toast(el.checked?"本次识别不生成解析（更快）":"恢复生成解析")})}
   el=document.getElementById("cb-photo-inp"); if(el) el.addEventListener("change",handlePhoto);
   el=document.getElementById("cb-photo-crop"); if(el) el.addEventListener("click",cropPhoto);
   el=document.getElementById("cb-photo-pdf"); if(el){el.addEventListener("click",importPdf); if(!pdfBridgeReady()) el.style.display="none";}
